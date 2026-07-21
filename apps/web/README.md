@@ -1,5 +1,5 @@
 # Bulletin web application
-
+Bulletin is a personalised email news briefing.
 The Bulletin web surface is a Next.js App Router application written in strict
 TypeScript and styled with Tailwind CSS. It lives inside the Bulletin npm
 workspace. Phases 3–5 add onboarding, secure subscriber access, and the public

@@ -1,0 +1,21 @@
+# Dependencies and build output
+node_modules/
+.npm-cache/
+.next/
+out/
+build/
+coverage/
+tmp/
+
+# Local environment and deployment state
+.env*
+!.env.example
+.vercel/
+
+# Generated and local files
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+*.pem
+*.log
+.vercel

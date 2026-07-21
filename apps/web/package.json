@@ -1,0 +1,44 @@
+{
+  "name": "@bulletin/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "workers:local": "node --env-file=.env.local scripts/local-worker-runner.mjs",
+    "workers:local:once": "node --env-file=.env.local scripts/local-worker-runner.mjs --once",
+    "runtime:self-hosted": "node scripts/production-runtime.mjs",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.110.5",
+    "fast-xml-parser": "5.10.0",
+    "gsap": "^3.15.0",
+    "next": "16.2.10",
+    "nodemailer": "^9.0.3",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "server-only": "^0.0.1",
+    "ws": "^8.21.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/nodemailer": "^8.0.1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/ws": "^8.18.1",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.10",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^4.1.10"
+  },
+  "engines": { "node": ">=22.0.0 <25.0.0" }
+}

@@ -1,0 +1,35 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+
+import { PRODUCT } from "@/config/product";
+
+import styles from "../legal.module.css";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description: "How Bulletin handles personal data during its private beta.",
+  robots: { index: false, follow: false },
+};
+
+export default function PrivacyPolicy() {
+  return <div className={styles.page}>
+    <header className={styles.header}><Link className={styles.brand} href="/">{PRODUCT.name}</Link><Link className={styles.back} href="/">Back to Bulletin</Link></header>
+    <main className={styles.main}>
+      <p className={styles.eyebrow}>Private beta</p>
+      <h1>Privacy Policy</h1>
+      <p className={styles.updated}>Approved for the private beta · prepared 19 July 2026 · not yet published externally</p>
+      <p className={styles.notice}>Bulletin is a small, India-first private beta operated by Sougandh Manoj. This policy explains, in plain language, what the service collects and why.</p>
+
+      <section className={styles.section}><h2>1. Information you provide</h2><p>When you create a Bulletin, we collect your name, email address, country, state or region, optional city, language, selected categories, custom and excluded topics, desired story count, frequency, delivery day where relevant, delivery time, timezone, theme, and consent record.</p><p>We also keep short-lived verification, management, subscriber-session, and owner-access records needed to secure passwordless access. Raw access tokens are not stored in the database.</p></section>
+      <section className={styles.section}><h2>2. Why we use it</h2><ul><li>to verify your email and prevent duplicate accounts;</li><li>to select and schedule a briefing from your explicit choices;</li><li>to deliver and manage your email briefing;</li><li>to pause, resume, or delete the service when you ask; and</li><li>to protect the service, enforce rate limits, diagnose failures, and prevent duplicate delivery.</li></ul><p>Bulletin does not use click tracking, targeted advertising, hidden interest profiles, or behavioural personalization.</p></section>
+      <section className={styles.section}><h2>3. News and automated processing</h2><p>Bulletin processes public RSS and Atom news metadata, including titles, descriptions, publisher names, publication times, categories, and original links. It uses automated rules to normalize, classify, group related reports, assess evidence, and match verified stories to subscriber preferences.</p><p>A configured AI provider may create a shared summary or localization from public-news evidence. Subscriber names, email addresses, private links, tokens, delivery identifiers tied to a person, and preferences are not sent to that provider. Automated checks can reject unsupported or conflicting output. Original publisher links remain visible.</p></section>
+      <section className={styles.section}><h2>4. Service providers and transfers</h2><p>Bulletin expects to use Supabase for its hosted database; Vercel for the website and stateless worker functions; Google Gmail for email delivery; and Groq for public-news summarization and localization. These providers may process data outside India under their own terms and security arrangements.</p><p>When you access Bulletin, Vercel may process hosting and security information such as your IP address, approximate location derived from it, request and diagnostic information, browser or device information, and date and time of access. Bulletin does not enable behavioural advertising or add third-party tracking merely because the service is hosted on Vercel.</p><p>Groq receives only selected public-news evidence. Its published controls say ordinary inference data is not retained by default, may be kept for up to 30 days for reliability or abuse investigation, and can be placed under Zero Data Retention where enabled. Bulletin will enable the narrowest available data controls before production.</p></section>
+      <section className={styles.section}><h2>5. Retention and deletion</h2><ul><li>unverified sign-ups: up to 7 days;</li><li>previous preference versions: up to 30 days;</li><li>personal delivery records: up to 90 days;</li><li>subscriber profile and active preferences: until confirmed deletion; and</li><li>technical sessions, tokens, rate-limit records, and logs: only for their documented security or operational period.</li></ul><p>Confirmed deletion removes your subscriber-related personal data from the primary database.</p><p>Public article metadata, source records, shared clusters, and summaries may remain because they are not created from subscriber identity.</p></section>
+      <section className={styles.section}><h2>6. Your controls</h2><p>You can use the secure Manage briefing link to view or change preferences, change theme, pause, resume, or deliberately confirm deletion. You may also contact the operator to ask about your data, correct it, withdraw consent, or report a concern. Email delivery can be stopped at any time through Manage briefing.</p></section>
+      <section className={styles.section}><h2>7. Security</h2><p>Bulletin uses HTTPS, server-only credentials, short-lived secure cookies, signed and expiring access links, CSRF protection, rate limits, database row-level security, bounded worker leases, and safe operational logs. No internet service can guarantee absolute security. Please keep private management links and your email account secure.</p></section>
+      <section className={styles.section}><h2>8. Adults-only beta and current Indian law</h2><p>Bulletin’s private beta is intended only for people aged 18 or older. Bulletin does not ask for age or date of birth, use an age-verification popup, profile children, or show targeted advertising. By deliberately confirming a beta subscription, a participant confirms that they are at least 18. If the operator learns that a participant is under 18, the subscription and associated personal data will be deleted.</p><p>As of 19 July 2026, India’s Digital Personal Data Protection Act, 2023 has commenced only in part. The principal duties concerning notice, consent, data-fiduciary obligations, individual rights, and children are scheduled to commence 18 months after 13 November 2025. Bulletin is being designed toward those requirements before they take effect. This statement records the current commencement schedule; it is not legal advice.</p></section>
+      <section className={styles.section}><h2>9. Changes and contact</h2><p>We may update this policy as the private beta, providers, or law change. A material change will be dated and communicated where appropriate. Questions or privacy requests may be sent to <a href="mailto:sougandh.manoj4@gmail.com">sougandh.manoj4@gmail.com</a>.</p></section>
+    </main>
+    <footer className={styles.footer}>Bulletin · A private-beta email briefing</footer>
+  </div>;
+}

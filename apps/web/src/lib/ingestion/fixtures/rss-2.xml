@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Fixture News</title>
+    <language>en-IN</language>
+    <item>
+      <title><![CDATA[Breaking News:  RBI keeps “policy” rate unchanged — again]]></title>
+      <link>https://publisher.example/policy?utm_source=rss&amp;b=2&amp;a=1</link>
+      <guid>fixture-1</guid>
+      <description><![CDATA[<p>A <strong>fixture</strong> description &amp; context.</p>]]></description>
+      <dc:creator>Fixture Desk</dc:creator>
+      <pubDate>Sat, 18 Jul 2026 06:00:00 +0530</pubDate>
+      <category>Business</category>
+      <category>Policy</category>
+    </item>
+    <item>
+      <title>Old item remains parseable</title>
+      <link>https://publisher.example/old</link>
+      <pubDate>Wed, 01 Jan 2025 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Missing timestamp is reported downstream</title>
+      <link>https://publisher.example/no-time</link>
+    </item>
+  </channel>
+</rss>
+

@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1472" height="1500" viewBox="0 0 736 750" role="img" aria-labelledby="title desc">
+  <title id="title">Bulletin briefing theme comparison</title>
+  <desc id="desc">The original minimal Light editorial and Dark intelligence briefing designs displayed side by side.</desc>
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#161a1f" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <rect width="736" height="750" fill="#f2f0eb"/>
+
+  <g font-family="Arial, Helvetica, sans-serif" fill="#20242b">
+    <text x="0" y="18" font-size="14" font-weight="600">Light editorial</text>
+    <text x="358" y="18" font-size="11" text-anchor="end" fill="#6d7177">Warm · calm · trustworthy</text>
+    <text x="378" y="18" font-size="14" font-weight="600">Dark intelligence</text>
+    <text x="736" y="18" font-size="11" text-anchor="end" fill="#6d7177">Focused · futuristic · high-contrast</text>
+  </g>
+
+  <rect x="0" y="36" width="358" height="700" rx="12" fill="#fbfaf6" filter="url(#shadow)"/>
+  <rect x="378" y="36" width="358" height="700" rx="12" fill="#191f26" filter="url(#shadow)"/>
+
+  <g fill="#20242b">
+    <text x="26" y="78" font-family="Georgia, Times New Roman, serif" font-size="21" font-weight="700" letter-spacing="-0.6">Bulletin</text>
+    <text x="332" y="77" font-family="Arial, Helvetica, sans-serif" font-size="10.5" text-anchor="end" fill="#6f747a">Friday · 11 July</text>
+
+    <text x="26" y="126" font-family="Arial, Helvetica, sans-serif" font-size="9.5" font-weight="600" letter-spacing="1.4" fill="#60717c">YOUR MORNING BRIEFING</text>
+    <text x="26" y="157" font-family="Georgia, Times New Roman, serif" font-size="19" font-weight="500">Good morning, Ananya.</text>
+    <text x="26" y="180" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6b7076">Three carefully selected stories, prepared around</text>
+    <text x="26" y="197" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6b7076">your interests.</text>
+
+    <line x1="26" y1="224" x2="332" y2="224" stroke="#20242b" stroke-opacity="0.18"/>
+
+    <text x="26" y="248" font-family="Arial, Helvetica, sans-serif" font-size="9.5" letter-spacing="0.8" fill="#71767b">TECHNOLOGY &amp; AI</text>
+    <text x="332" y="248" font-family="Arial, Helvetica, sans-serif" font-size="9.5" letter-spacing="0.8" text-anchor="end" fill="#86898b">4 MIN AGO</text>
+
+    <text x="26" y="276" font-family="Georgia, Times New Roman, serif" font-size="17" font-weight="700">
+      <tspan x="26" dy="0">A cleaner path for the next</tspan>
+      <tspan x="26" dy="21">generation of Indian startups</tspan>
+    </text>
+
+    <text x="26" y="331" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#353a40">
+      <tspan x="26" dy="0">A new policy proposal focuses on research access,</tspan>
+      <tspan x="26" dy="18">early-stage support, and clearer pathways for</tspan>
+      <tspan x="26" dy="18">emerging technology companies.</tspan>
+    </text>
+
+    <line x1="26" y1="399" x2="26" y2="472" stroke="#3b6f8f" stroke-width="2"/>
+    <text x="38" y="414" font-family="Arial, Helvetica, sans-serif" font-size="12.1">
+      <tspan font-weight="700">Why it matters:</tspan>
+      <tspan> The changes could make</tspan>
+      <tspan x="38" dy="18">it easier for smaller teams to move from research</tspan>
+      <tspan x="38" dy="18">to market.</tspan>
+    </text>
+
+    <text x="26" y="495" font-family="Arial, Helvetica, sans-serif" font-size="10.5" fill="#6b7076">Sources: Publisher One · Publisher Two</text>
+
+    <line x1="26" y1="527" x2="332" y2="527" stroke="#20242b" stroke-opacity="0.14"/>
+    <text x="26" y="549" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#919497">02</text>
+    <text x="49" y="549" font-family="Arial, Helvetica, sans-serif" font-size="11.5">
+      <tspan x="49" dy="0">Researchers report progress in longer-lasting</tspan>
+      <tspan x="49" dy="17">battery storage</tspan>
+    </text>
+
+    <line x1="26" y1="584" x2="332" y2="584" stroke="#20242b" stroke-opacity="0.14"/>
+    <text x="26" y="606" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#919497">03</text>
+    <text x="49" y="606" font-family="Arial, Helvetica, sans-serif" font-size="11.5">
+      <tspan x="49" dy="0">Regional markets open with a steadier</tspan>
+      <tspan x="49" dy="17">technology outlook</tspan>
+    </text>
+
+    <line x1="26" y1="674" x2="332" y2="674" stroke="#20242b" stroke-opacity="0.18"/>
+    <text x="26" y="701" font-family="Arial, Helvetica, sans-serif" font-size="10.5" fill="#6b7076">Exclusively prepared for Ananya.</text>
+    <text x="332" y="701" font-family="Arial, Helvetica, sans-serif" font-size="10.5" font-weight="600" text-anchor="end" text-decoration="underline">Manage briefing</text>
+  </g>
+
+  <g fill="#f2f0ea">
+    <circle cx="404" cy="70" r="4" fill="#5fa1c8"/>
+    <text x="416" y="76" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="600" letter-spacing="1.3">BULLETIN</text>
+    <text x="710" y="75" font-family="Arial, Helvetica, sans-serif" font-size="10.5" text-anchor="end" fill="#a7b0b8">11.07 · 07:30</text>
+
+    <text x="404" y="126" font-family="Arial, Helvetica, sans-serif" font-size="9.5" font-weight="600" letter-spacing="1.4" fill="#75aeca">PERSONAL INTELLIGENCE BRIEF</text>
+    <text x="404" y="157" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="600">Morning, Ananya.</text>
+    <text x="404" y="180" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#abb4bc">Three high-signal developments matched to your</text>
+    <text x="404" y="197" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#abb4bc">briefing profile.</text>
+
+    <line x1="404" y1="224" x2="710" y2="224" stroke="#f2f0ea" stroke-opacity="0.18"/>
+
+    <text x="404" y="248" font-family="Arial, Helvetica, sans-serif" font-size="9.5" letter-spacing="0.8" fill="#9ca7af">TECHNOLOGY &amp; AI</text>
+    <text x="710" y="248" font-family="Arial, Helvetica, sans-serif" font-size="9.5" letter-spacing="0.8" text-anchor="end" fill="#88939c">SIGNAL 01</text>
+
+    <text x="404" y="276" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="600">
+      <tspan x="404" dy="0">A cleaner path for the next</tspan>
+      <tspan x="404" dy="20">generation of Indian startups</tspan>
+    </text>
+
+    <text x="404" y="331" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#c2c8cd">
+      <tspan x="404" dy="0">A new policy proposal focuses on research access,</tspan>
+      <tspan x="404" dy="18">early-stage support, and clearer pathways for</tspan>
+      <tspan x="404" dy="18">emerging technology companies.</tspan>
+    </text>
+
+    <line x1="404" y1="399" x2="404" y2="472" stroke="#5fa1c8" stroke-width="2"/>
+    <text x="416" y="414" font-family="Arial, Helvetica, sans-serif" font-size="12.1">
+      <tspan font-weight="700">Why it matters:</tspan>
+      <tspan fill="#c2c8cd"> The changes could make</tspan>
+      <tspan x="416" dy="18" fill="#c2c8cd">it easier for smaller teams to move from research</tspan>
+      <tspan x="416" dy="18" fill="#c2c8cd">to market.</tspan>
+    </text>
+
+    <text x="404" y="495" font-family="Arial, Helvetica, sans-serif" font-size="10.5" fill="#86b7d0">Verified across: Publisher One · Publisher Two</text>
+
+    <line x1="404" y1="527" x2="710" y2="527" stroke="#f2f0ea" stroke-opacity="0.14"/>
+    <text x="404" y="549" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#7d8891">02</text>
+    <text x="427" y="549" font-family="Arial, Helvetica, sans-serif" font-size="11.5">
+      <tspan x="427" dy="0">Researchers report progress in longer-lasting</tspan>
+      <tspan x="427" dy="17">battery storage</tspan>
+    </text>
+
+    <line x1="404" y1="584" x2="710" y2="584" stroke="#f2f0ea" stroke-opacity="0.14"/>
+    <text x="404" y="606" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#7d8891">03</text>
+    <text x="427" y="606" font-family="Arial, Helvetica, sans-serif" font-size="11.5">
+      <tspan x="427" dy="0">Regional markets open with a steadier</tspan>
+      <tspan x="427" dy="17">technology outlook</tspan>
+    </text>
+
+    <line x1="404" y1="674" x2="710" y2="674" stroke="#f2f0ea" stroke-opacity="0.18"/>
+    <text x="404" y="701" font-family="Arial, Helvetica, sans-serif" font-size="10.5" fill="#abb4bc">Prepared exclusively for Ananya.</text>
+    <text x="710" y="701" font-family="Arial, Helvetica, sans-serif" font-size="10.5" font-weight="600" text-anchor="end" text-decoration="underline" fill="#75aeca">Manage briefing</text>
+  </g>
+</svg>

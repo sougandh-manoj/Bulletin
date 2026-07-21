@@ -1,0 +1,12 @@
+.git
+.DS_Store
+.npm-cache
+**/.next
+**/.env
+**/.env.*
+!**/.env.example
+node_modules
+output
+tmp
+verification
+exports

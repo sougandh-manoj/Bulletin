@@ -1,0 +1,2 @@
+-- Phase 2 intentionally has no production seed data.
+-- Source catalogue records are verified and introduced in Phase 6.

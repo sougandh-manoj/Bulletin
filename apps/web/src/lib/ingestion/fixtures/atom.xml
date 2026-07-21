@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ml-IN">
+  <title>Malayalam Fixture</title>
+  <entry>
+    <title>കേരള വാർത്താ പരിശോധന</title>
+    <id>tag:publisher.example,2026:one</id>
+    <link rel="self" href="https://publisher.example/feed-entry"/>
+    <link rel="alternate" href="https://publisher.example/ml/story?fbclid=tracking"/>
+    <summary>ഒരു പരിശോധനാ വാർത്ത</summary>
+    <author><name>ന്യൂസ് ഡെസ്ക്</name></author>
+    <published>2026-07-18T05:00:00Z</published>
+    <updated>2026-07-18T05:05:00Z</updated>
+    <category term="Kerala"/>
+  </entry>
+</feed>
+

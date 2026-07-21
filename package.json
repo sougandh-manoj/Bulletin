@@ -1,0 +1,40 @@
+{
+  "name": "bulletin",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @bulletin/web",
+    "build": "npm run build --workspace @bulletin/web",
+    "lint": "npm run lint --workspace @bulletin/web",
+    "typecheck": "npm run typecheck --workspace @bulletin/web",
+    "test": "npm run test --workspace @bulletin/web",
+    "test:phase4:integration": "node apps/web/scripts/phase4-local-integration.mjs",
+    "test:phase4:browser-fixture": "node apps/web/scripts/phase4-browser-fixture.mjs",
+    "test:phase7:integration": "RUN_PHASE7_LOCAL_INTELLIGENCE=1 npm run test --workspace @bulletin/web -- --run src/test/phase7-local-intelligence.test.ts",
+    "test:phase8:integration": "RUN_PHASE8_LOCAL_PERSONALIZATION=1 npm run test --workspace @bulletin/web -- --run src/test/phase8-local-personalization.test.ts",
+    "test:phase9:integration": "RUN_PHASE9_LOCAL_DELIVERY=1 node --env-file=apps/web/.env.local node_modules/vitest/vitest.mjs run --root apps/web --config vitest.config.ts src/test/phase9-local-delivery.test.ts",
+    "test:phase9:restore": "node apps/web/scripts/phase9-backup-restore-drill.mjs",
+    "test:phase9:email-visual": "RUN_PHASE9_EMAIL_VISUAL=1 npm run test --workspace @bulletin/web -- --run src/test/phase9-email-visual.test.ts",
+    "test:phase10:load": "RUN_PHASE10_LOCAL_LOAD=1 node --env-file=apps/web/.env.local node_modules/vitest/vitest.mjs run --root apps/web --config vitest.config.ts src/test/phase10-local-load.test.ts",
+    "test:phase10:db-isolated": "node apps/web/scripts/phase10-isolated-db-gates.mjs",
+    "scan:client-secrets": "node apps/web/scripts/scan-client-secrets.mjs",
+    "verify:production-cron": "node apps/web/scripts/verify-production-cron-config.mjs",
+    "check": "npm run verify:production-cron && npm run lint && npm run typecheck && npm run test && npm run build",
+    "start:self-hosted": "node apps/web/scripts/production-runtime.mjs",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:test": "supabase test db",
+    "db:lint": "supabase db lint --level warning --fail-on warning --schema public,bulletin_private",
+    "db:verify": "supabase db reset && supabase test db && npm run db:lint"
+  },
+  "engines": {
+    "node": ">=22.0.0 <25.0.0"
+  },
+  "devDependencies": {
+    "supabase": "^2.109.1"
+  }
+}

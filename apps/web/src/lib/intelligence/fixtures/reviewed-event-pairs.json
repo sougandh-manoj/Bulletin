@@ -1,0 +1,156 @@
+[
+  {
+    "id": "clear-match-different-wording",
+    "review": "Two independently worded reports of the same public grant announcement.",
+    "expectedDecision": "accept",
+    "expectedMeaningfulUpdate": false,
+    "left": {
+      "entities": { "people": [], "organizations": ["National Grants Agency"], "locations": ["Kochi"] },
+      "geography": { "countryCode": "IN", "stateRegion": "Kerala", "city": "Kochi" },
+      "eventTime": "2026-07-18T06:00:00Z", "eventType": "grant-announcement",
+      "keyAction": "Agency opens applications", "keyOutcome": "Applications are open",
+      "importantNumbers": [{ "label": "grant", "value": "10", "unit": "crore", "qualifier": null }]
+    },
+    "right": {
+      "entities": { "people": [], "organizations": ["National Grants Agency"], "locations": ["Kochi"] },
+      "geography": { "countryCode": "IN", "stateRegion": "Kerala", "city": "Kochi" },
+      "eventTime": "2026-07-18T07:00:00Z", "eventType": "grant-announcement",
+      "keyAction": "Funding programme begins", "keyOutcome": "Applications are open",
+      "importantNumbers": [{ "label": "grant", "value": "10", "unit": "crore", "qualifier": null }]
+    }
+  },
+  {
+    "id": "clear-non-match-similar-wording",
+    "review": "Nearly identical grant wording refers to different organizations and states.",
+    "expectedDecision": "reject",
+    "expectedMeaningfulUpdate": false,
+    "left": {
+      "entities": { "people": [], "organizations": ["Kerala Arts Board"], "locations": ["Kochi"] },
+      "geography": { "countryCode": "IN", "stateRegion": "Kerala", "city": "Kochi" },
+      "eventTime": "2026-07-18T06:00:00Z", "eventType": "grant-announcement",
+      "keyAction": "Board opens grant", "keyOutcome": "Applications open",
+      "importantNumbers": [{ "label": "grant", "value": "5", "unit": "crore", "qualifier": null }]
+    },
+    "right": {
+      "entities": { "people": [], "organizations": ["Delhi Arts Board"], "locations": ["Delhi"] },
+      "geography": { "countryCode": "IN", "stateRegion": "Delhi", "city": "Delhi" },
+      "eventTime": "2026-07-18T06:00:00Z", "eventType": "grant-announcement",
+      "keyAction": "Board opens grant", "keyOutcome": "Applications open",
+      "importantNumbers": [{ "label": "grant", "value": "5", "unit": "crore", "qualifier": null }]
+    }
+  },
+  {
+    "id": "difficult-near-match-remains-separate",
+    "review": "Generic weather reports lack a shared principal entity and precise event time.",
+    "expectedDecision": "uncertain",
+    "expectedMeaningfulUpdate": false,
+    "left": {
+      "entities": { "people": [], "organizations": [], "locations": ["Assam"] },
+      "geography": { "countryCode": "IN", "stateRegion": "Assam", "city": null },
+      "eventTime": null, "eventType": "weather-warning", "keyAction": "Warning issued", "keyOutcome": null, "importantNumbers": []
+    },
+    "right": {
+      "entities": { "people": [], "organizations": [], "locations": ["Assam"] },
+      "geography": { "countryCode": "IN", "stateRegion": "Assam", "city": null },
+      "eventTime": null, "eventType": "weather-warning", "keyAction": "Alert published", "keyOutcome": null, "importantNumbers": []
+    }
+  },
+  {
+    "id": "meaningful-update",
+    "review": "Same regulator action gains a materially new outcome.",
+    "expectedDecision": "accept",
+    "expectedMeaningfulUpdate": true,
+    "left": {
+      "entities": { "people": [], "organizations": ["Market Regulator"], "locations": ["Mumbai"] },
+      "geography": { "countryCode": "IN", "stateRegion": "Maharashtra", "city": "Mumbai" },
+      "eventTime": "2026-07-18T09:00:00Z", "eventType": "regulatory-action",
+      "keyAction": "Regulator issues order", "keyOutcome": "Trading resumes Monday",
+      "importantNumbers": [{ "label": "penalty", "value": "2", "unit": "crore", "qualifier": null }]
+    },
+    "right": {
+      "entities": { "people": [], "organizations": ["Market Regulator"], "locations": ["Mumbai"] },
+      "geography": { "countryCode": "IN", "stateRegion": "Maharashtra", "city": "Mumbai" },
+      "eventTime": "2026-07-18T08:30:00Z", "eventType": "regulatory-action",
+      "keyAction": "Regulator issues order", "keyOutcome": "Order published",
+      "importantNumbers": [{ "label": "penalty", "value": "2", "unit": "crore", "qualifier": null }]
+    }
+  },
+  {
+    "id": "numeric-conflict",
+    "review": "Same named event has incompatible casualty figures and must not merge.",
+    "expectedDecision": "reject",
+    "expectedMeaningfulUpdate": true,
+    "left": {
+      "entities": { "people": [], "organizations": ["District Authority"], "locations": ["Town A"] },
+      "geography": { "countryCode": "IN", "stateRegion": "State A", "city": "Town A" },
+      "eventTime": "2026-07-18T05:00:00Z", "eventType": "public-safety-incident",
+      "keyAction": "Authority reports incident", "keyOutcome": "Response underway",
+      "importantNumbers": [{ "label": "injured", "value": "4", "unit": "people", "qualifier": null }]
+    },
+    "right": {
+      "entities": { "people": [], "organizations": ["District Authority"], "locations": ["Town A"] },
+      "geography": { "countryCode": "IN", "stateRegion": "State A", "city": "Town A" },
+      "eventTime": "2026-07-18T05:10:00Z", "eventType": "public-safety-incident",
+      "keyAction": "Authority reports incident", "keyOutcome": "Response underway",
+      "importantNumbers": [{ "label": "injured", "value": "9", "unit": "people", "qualifier": null }]
+    }
+  },
+  {
+    "id": "multilingual-hindi-english-match",
+    "review": "Hindi and English extraction converge on canonical entities and event facts.",
+    "expectedDecision": "accept",
+    "expectedMeaningfulUpdate": false,
+    "left": {
+      "entities": { "people": [], "organizations": ["Election Commission of India"], "locations": ["Delhi"] },
+      "geography": { "countryCode": "IN", "stateRegion": "Delhi", "city": "Delhi" },
+      "eventTime": "2026-07-18T11:00:00Z", "eventType": "election-announcement",
+      "keyAction": "Commission announces schedule", "keyOutcome": "Polling date announced",
+      "importantNumbers": [{ "label": "polling date", "value": "20 July", "unit": null, "qualifier": null }]
+    },
+    "right": {
+      "entities": { "people": [], "organizations": ["Election Commission of India"], "locations": ["Delhi"] },
+      "geography": { "countryCode": "IN", "stateRegion": "Delhi", "city": "Delhi" },
+      "eventTime": "2026-07-18T11:05:00Z", "eventType": "election-announcement",
+      "keyAction": "Commission announces schedule", "keyOutcome": "Polling date announced",
+      "importantNumbers": [{ "label": "polling date", "value": "20 July", "unit": null, "qualifier": null }]
+    }
+  },
+  {
+    "id": "multilingual-malayalam-english-match",
+    "review": "Malayalam and English reports retain canonical institution, place, time, and amount.",
+    "expectedDecision": "accept",
+    "expectedMeaningfulUpdate": false,
+    "left": {
+      "entities": { "people": [], "organizations": ["Kerala Health Department"], "locations": ["Thiruvananthapuram"] },
+      "geography": { "countryCode": "IN", "stateRegion": "Kerala", "city": "Thiruvananthapuram" },
+      "eventTime": "2026-07-18T12:00:00Z", "eventType": "health-programme-launch",
+      "keyAction": "Health programme launches", "keyOutcome": "Registration opens",
+      "importantNumbers": [{ "label": "clinics", "value": "12", "unit": null, "qualifier": null }]
+    },
+    "right": {
+      "entities": { "people": [], "organizations": ["Kerala Health Department"], "locations": ["Thiruvananthapuram"] },
+      "geography": { "countryCode": "IN", "stateRegion": "Kerala", "city": "Thiruvananthapuram" },
+      "eventTime": "2026-07-18T12:10:00Z", "eventType": "health-programme-launch",
+      "keyAction": "Health programme launches", "keyOutcome": "Registration opens",
+      "importantNumbers": [{ "label": "clinics", "value": "12", "unit": null, "qualifier": null }]
+    }
+  },
+  {
+    "id": "sensitive-legal-match-requires-extra-policy",
+    "review": "Facts match, but legal allegations still require stronger independent evidence in orchestration.",
+    "expectedDecision": "accept",
+    "expectedMeaningfulUpdate": false,
+    "left": {
+      "entities": { "people": ["Fixture Official"], "organizations": ["State Court"], "locations": ["City B"] },
+      "geography": { "countryCode": "IN", "stateRegion": "State B", "city": "City B" },
+      "eventTime": "2026-07-18T13:00:00Z", "eventType": "legal-allegation",
+      "keyAction": "Court records allegation", "keyOutcome": "Hearing scheduled", "importantNumbers": []
+    },
+    "right": {
+      "entities": { "people": ["Fixture Official"], "organizations": ["State Court"], "locations": ["City B"] },
+      "geography": { "countryCode": "IN", "stateRegion": "State B", "city": "City B" },
+      "eventTime": "2026-07-18T13:05:00Z", "eventType": "legal-allegation",
+      "keyAction": "Court records allegation", "keyOutcome": "Hearing scheduled", "importantNumbers": []
+    }
+  }
+]

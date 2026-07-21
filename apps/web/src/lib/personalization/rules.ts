@@ -3,10 +3,12 @@ import type {
   SupportedLanguage,
 } from "@/config/product";
 
-export const PERSONALIZATION_VERSION = "phase-10-category-coverage-v2";
+export const PERSONALIZATION_VERSION = "phase-10-category-coverage-v3";
 
 export const PERSONALIZATION_RULES = Object.freeze({
-  minimumScore: 45,
+  // A verified story in a selected category reaches 30 even at the baseline
+  // evidence/source tiers. Ranking should order news, not erase coverage.
+  minimumScore: 30,
   maximumCandidatePool: 500,
   maximumLocalizationQueuesPerDelivery: 10,
   weights: Object.freeze({
@@ -244,11 +246,11 @@ function rerankForDiversity(
   const selected: ScoredCandidate[] = [];
   const categoryCounts = new Map<NewsCategory, number>();
   const subjectCounts = new Map<string, number>();
-  const targetCount = Math.max(context.storyCount, context.categories.length * 2);
+  const targetCount = Math.max(context.storyCount, context.categories.length * 3);
 
   // Coverage comes before global score: take the best available story from
-  // every selected category twice, then use score and diversity for the rest.
-  for (let round = 0; round < 2 && selected.length < targetCount; round += 1) {
+  // every selected category three times, then use score and diversity for the rest.
+  for (let round = 0; round < 3 && selected.length < targetCount; round += 1) {
     for (const category of context.categories) {
       if (selected.length >= targetCount) break;
       const choices = remaining

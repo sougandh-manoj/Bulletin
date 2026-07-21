@@ -16,7 +16,7 @@ const validPreferences = {
   categories: ["india", "technology-ai"],
   customTopics: ["Space policy"],
   excludedTopics: ["Celebrity gossip"],
-  storyCount: 4,
+  storyCount: 6,
   frequency: "daily",
   deliveryTime: "07:30",
   timezone: "Asia/Kolkata",

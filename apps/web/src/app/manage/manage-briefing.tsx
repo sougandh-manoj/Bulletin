@@ -675,7 +675,7 @@ export default function ManageBriefing({
           <div className={styles.manageStoryControl}>
             <div>
               <label htmlFor="manage-count">Stories in each briefing</label>
-              <p>{draft.storyCount} stories total — two or three from every selected category.</p>
+              <p>{draft.storyCount} stories total — three or four from every selected category.</p>
             </div>
             <div className={styles.manageStepper}>
               <button

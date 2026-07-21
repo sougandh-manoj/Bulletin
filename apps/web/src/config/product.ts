@@ -152,7 +152,7 @@ export const PRODUCT = {
     categories: { min: 1, max: 8 },
     customTopics: 5,
     excludedTopics: 5,
-    stories: { min: 2, max: 24, perCategoryMin: 2, perCategoryMax: 3 },
+    stories: { min: 3, max: 32, perCategoryMin: 3, perCategoryMax: 4 },
   },
   consentVersion: "2026-07-12",
 } as const;

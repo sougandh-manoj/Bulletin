@@ -1419,7 +1419,7 @@ export default function OnboardingFlow() {
                     <div className={styles.storyControl}>
                       <div>
                         <label htmlFor="story-count">Stories in each briefing</label>
-                        <p>{draft.storyCount} stories total — two or three from every selected category.</p>
+                        <p>{draft.storyCount} stories total — three or four from every selected category.</p>
                       </div>
                       <div className={styles.stepper}>
                         <button
@@ -1464,7 +1464,7 @@ export default function OnboardingFlow() {
                         </button>
                       </div>
                       <p className={styles.srOnly} id="story-helper">
-                        Choose between two and three stories for every selected category.
+                        Choose between three and four stories for every selected category.
                       </p>
                       <InlineError id="story-count-error" message={errors.storyCount} />
                     </div>

@@ -107,4 +107,16 @@ describe("local article analysis", () => {
     }));
     expect(result.category).toBe("science");
   });
+
+  it("classifies veterinary stem-cell reporting as health rather than finance", () => {
+    const result = analyzeArticleLocally(article({
+      title: "Scientists create canine red-blood-cell-like cells from induced stem cells",
+      description: "The veterinary medicine study could improve transfusion availability for canine patients.",
+      feedCategories: ["markets-personal-finance"],
+      countryCode: null,
+      stateRegion: null,
+      city: null,
+    }));
+    expect(result.category).toBe("health");
+  });
 });

@@ -124,7 +124,7 @@ describe("Phase 8 deterministic personalization rules", () => {
     const fiveStoryContext = {
       ...context,
       categories: [...context.categories, "business-economy"] as NewsCategory[],
-      storyCount: 8,
+      storyCount: 12,
     };
     const technology = Array.from({ length: 4 }, (_, index) => candidate({
       category: "technology-ai",
@@ -133,31 +133,35 @@ describe("Phase 8 deterministic personalization rules", () => {
     const alternatives = [
       candidate({ category: "science", centralTopics: ["lunar science"] }),
       candidate({ category: "science", centralTopics: ["ocean science"] }),
+      candidate({ category: "science", centralTopics: ["climate science"] }),
       candidate({ category: "health", centralTopics: ["public health"] }),
       candidate({ category: "health", centralTopics: ["clinical care"] }),
+      candidate({ category: "health", centralTopics: ["hospital capacity"] }),
       candidate({ category: "business-economy", centralTopics: ["economic policy"] }),
       candidate({ category: "business-economy", centralTopics: ["trade policy"] }),
+      candidate({ category: "business-economy", centralTopics: ["industry output"] }),
     ];
     const decision = personalize(fiveStoryContext, [...technology, ...alternatives]);
-    expect(decision.selected).toHaveLength(8);
-    expect(decision.selected.filter((item) => item.category === "technology-ai")).toHaveLength(2);
+    expect(decision.selected).toHaveLength(12);
+    expect(decision.selected.filter((item) => item.category === "technology-ai")).toHaveLength(3);
     expect(decision.selected.filter((item) => item.subjectKey === "semiconductor policy")).toHaveLength(1);
   });
 
-  it("reserves two available stories for every selected category before filling extras", () => {
+  it("reserves three available stories for every selected category before filling extras", () => {
     const categories: NewsCategory[] = [
       "india", "world", "startups", "technology-ai", "education-careers", "entertainment",
     ];
-    const coverageContext = { ...context, categories, storyCount: 12 };
+    const coverageContext = { ...context, categories, storyCount: 18 };
     const inventory = categories.flatMap((category) => [
       candidate({ category, centralTopics: [`${category}-one`] }),
       candidate({ category, centralTopics: [`${category}-two`] }),
       candidate({ category, centralTopics: [`${category}-three`] }),
+      candidate({ category, centralTopics: [`${category}-four`] }),
     ]);
     const decision = personalize(coverageContext, inventory);
-    expect(decision.selected).toHaveLength(12);
+    expect(decision.selected).toHaveLength(18);
     for (const category of categories) {
-      expect(decision.selected.filter((item) => item.category === category)).toHaveLength(2);
+      expect(decision.selected.filter((item) => item.category === category)).toHaveLength(3);
     }
   });
 
@@ -165,17 +169,17 @@ describe("Phase 8 deterministic personalization rules", () => {
     const singleCategoryContext = {
       ...context,
       categories: ["technology-ai"] as NewsCategory[],
-      storyCount: 5,
+      storyCount: 4,
     };
     const decision = personalize(
       singleCategoryContext,
-      Array.from({ length: 5 }, (_, index) => candidate({ centralTopics: [`single-${index}`] })),
+      Array.from({ length: 4 }, (_, index) => candidate({ centralTopics: [`single-${index}`] })),
     );
-    expect(decision.selected).toHaveLength(5);
+    expect(decision.selected).toHaveLength(4);
     expect(new Set(decision.selected.map((item) => item.category))).toEqual(new Set(["technology-ai"]));
   });
 
-  it("returns short or empty results instead of lowering the quality floor", () => {
+  it("keeps baseline verified reporting instead of over-filtering it", () => {
     const strong = candidate();
     const filler = candidate({
       evidenceStrength: "sufficient",
@@ -185,10 +189,10 @@ describe("Phase 8 deterministic personalization rules", () => {
       latestEventAt: context.windowStartedAt,
     });
     const short = personalize({ ...context, storyCount: 3 }, [strong, filler]);
-    expect(short.selected).toHaveLength(1);
-    expect(short.excluded.belowQualityFloor).toBe(1);
-    expect(PERSONALIZATION_RULES.minimumScore).toBeGreaterThan(scoreCandidate(context, filler)!.score);
-    expect(personalize(context, [filler]).selected).toHaveLength(0);
+    expect(short.selected).toHaveLength(2);
+    expect(short.excluded.belowQualityFloor).toBe(0);
+    expect(PERSONALIZATION_RULES.minimumScore).toBe(scoreCandidate(context, filler)!.score);
+    expect(personalize(context, [filler]).selected).toHaveLength(1);
   });
 
   it("selects only verified available language inventory and queues shared missing localizations", () => {

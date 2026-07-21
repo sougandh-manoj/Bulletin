@@ -25,7 +25,7 @@ const CATEGORY_KEYWORDS: Record<NewsCategory, string[]> = {
   startups: ["startup", "funding round", "venture capital", "founder"],
   "technology-ai": ["technology", "artificial intelligence", " ai ", "software", "smartphone", "computer", "robot", "टेक", "तकनीक", "സാങ്കേതിക"],
   science: ["science", "research", "study", "space", "nasa", "physics", "quantum", "astronomy", "biology", "वैज्ञानिक", "अंतरिक्ष", "ശാസ്ത്ര", "ഗവേഷണം"],
-  health: ["health", "medical", "patient", "patients", "disease", "diseases", "cancer", "clinical", "screening", "syndrome", "hospital", "treatment", "therapy", "glaucoma", "retina", "स्वास्थ्य", "अस्पताल", "ആരോഗ്യ", "ആശുപത്രി"],
+  health: ["health", "medical", "medicine", "veterinary", "patient", "patients", "disease", "diseases", "cancer", "clinical", "screening", "syndrome", "hospital", "treatment", "therapy", "transfusion", "stem cells", "glaucoma", "retina", "स्वास्थ्य", "अस्पताल", "ആരോഗ്യ", "ആശുപത്രി"],
   "education-careers": ["education", "school", "university", "exam", "jobs", "career", "शिक्षा", "परीक्षा", "വിദ്യാഭ്യാസ", "പരീക്ഷ"],
   "government-schemes": ["government scheme", "public programme", "grant", "benefit", "subsidy", "सरकारी योजना", "सब्सिडी", "സർക്കാർ പദ്ധതി"],
   sports: ["sport", "match", "tournament", "cricket", "football", "world cup", "खेल", "क्रिकेट", "കായിക", "ക്രിക്കറ്റ്"],
@@ -34,7 +34,7 @@ const CATEGORY_KEYWORDS: Record<NewsCategory, string[]> = {
 };
 
 const STRONG_CATEGORY_PATTERNS: Array<{ category: NewsCategory; pattern: RegExp }> = [
-  { category: "health", pattern: /\b(?:health|medical|patient(?:s)?|disease(?:s)?|cancer|clinical|screening|syndrome|hospital|diagnos(?:is|ed)|treatment|therap(?:y|ies)|vaccine|outbreak|mortality|glaucoma|retina|colorectal)\b|स्वास्थ्य|अस्पताल|बीमारी|इलाज|ആരോഗ്യ|ആശുപത്രി|രോഗം|ചികിത്സ/iu },
+  { category: "health", pattern: /\b(?:health|medical|medicine|veterinary|patient(?:s)?|disease(?:s)?|cancer|clinical|screening|syndrome|hospital|diagnos(?:is|ed)|treatment|therap(?:y|ies)|transfusion(?:s)?|stem cells?|vaccine|outbreak|mortality|glaucoma|retina|colorectal)\b|स्वास्थ्य|अस्पताल|बीमारी|इलाज|ആരോഗ്യ|ആശുപത്രി|രോഗം|ചികിത്സ/iu },
   { category: "education-careers", pattern: /\b(?:education|school|college|student(?:s)?|teacher(?:s)?|exam(?:s)?|admission(?:s)?|scholarship(?:s)?|career(?:s)?|job(?:s)?)\b|शिक्षा|परीक्षा|വിദ്യാഭ്യാസ|പരീക്ഷ/iu },
   { category: "entertainment", pattern: /\b(?:film|movie|cinema|actor|actress|director|music|television|streaming|box office|bollywood|hollywood)\b|फिल्म|अभिनेता|സിനിമ|നടൻ/iu },
   { category: "sports", pattern: /\b(?:sport(?:s)?|match|tournament|cricket|football|formula\s*1|grand prix|world cup)\b|खेल|क्रिकेट|കായിക|ക്രിക്കറ്റ്/iu },
@@ -59,7 +59,7 @@ const SENSITIVE_PATTERNS: Array<{ flag: ArticleClassification["sensitiveFlags"][
   { flag: "election", pattern: /\b(?:election|ballot|polling station|vote count)\b|चुनाव|मतदान|തിരഞ്ഞെടുപ്പ്/iu },
   { flag: "financial", pattern: /\b(?:financial fraud|investment fraud|bank fraud|scam|bankruptcy|insolvency|market crash|money laundering)\b|घोटाला|दिवालिया|തട്ടിപ്പ്/iu },
   { flag: "government", pattern: /\b(?:government order|government scheme|ministry|cabinet|parliament|legislation|official policy|regulatory order)\b|सरकारी आदेश|मंत्रालय|संसद|മന്ത്രാലയം|പാർലമെന്റ്/iu },
-  { flag: "health", pattern: /\b(?:patient(?:s)?|clinical trial|diagnos(?:is|ed)|disease(?:s)?|cancer|screening|syndrome|treatment|therap(?:y|ies)|vaccine|outbreak|epidemic|medical advice|public health|mortality|glaucoma|retina)\b|मरीज|बीमारी|इलाज|टीका|രോഗി|രോഗം|ചികിത്സ|വാക്സിൻ/iu },
+  { flag: "health", pattern: /\b(?:patient(?:s)?|clinical trial|diagnos(?:is|ed)|disease(?:s)?|cancer|screening|syndrome|medicine|veterinary|transfusion(?:s)?|stem cells?|treatment|therap(?:y|ies)|vaccine|outbreak|epidemic|medical advice|public health|mortality|glaucoma|retina)\b|मरीज|बीमारी|इलाज|टीका|രോഗി|രോഗം|ചികിത്സ|വാക്സിൻ/iu },
   { flag: "legal", pattern: /\b(?:court ruling|lawsuit|charged with|arrested|convicted|criminal investigation|legal action)\b|अदालत|गिरफ्तार|मुकदमा|കോടതി|അറസ്റ്റ്/iu },
   { flag: "political", pattern: /\b(?:political party|prime minister|presidential|opposition leader|coalition government)\b|प्रधानमंत्री|राजनीतिक दल|പ്രധാനമന്ത്രി|രാഷ്ട്രീയ പാർട്ടി/iu },
   { flag: "public-safety", pattern: /\b(?:emergency warning|security alert|evacuation order|product recall|public safety)\b|आपात चेतावनी|सुरक्षा चेतावनी|അടിയന്തര മുന്നറിയിപ്പ്/iu },

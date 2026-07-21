@@ -16,7 +16,7 @@ const completeDraft: OnboardingDraft = {
   stateRegion: "Karnataka",
   city: "Bengaluru",
   categories: ["india", "technology-ai"],
-  storyCount: 4,
+  storyCount: 6,
   customTopics: ["Space policy"],
   excludedTopics: ["Celebrity gossip"],
   consent: true,

@@ -83,12 +83,19 @@ async function structured<T>(input: {
 
 function evidencePayload(job: SummaryJob) {
   return job.evidence.map((item) => ({
-    sourceId: item.id, title: item.title.slice(0, 500), description: item.description?.slice(0, 5_000) ?? null,
-    canonicalUrl: item.canonicalUrl, publishedAt: item.publishedAt, publisherName: item.publisherName,
-    publisherFamilyKey: item.publisherFamilyKey, language: item.language, reliability: item.reliability,
-    isInstitutional: item.isInstitutional, classification: item.classification, entities: item.entities,
-    eventType: item.eventType, eventTime: item.eventTime, keyAction: item.keyAction,
-    keyOutcome: item.keyOutcome, importantNumbers: item.importantNumbers,
+    id: item.id,
+    title: item.title.slice(0, 220),
+    excerpt: item.description?.slice(0, 700) ?? null,
+    publisher: item.publisherName,
+    publishedAt: item.publishedAt,
+    category: item.classification?.category ?? null,
+    action: item.keyAction?.slice(0, 180) ?? null,
+    outcome: item.keyOutcome?.slice(0, 180) ?? null,
+    numbers: item.importantNumbers.slice(0, 5).map((number) => ({
+      label: number.label.slice(0, 80),
+      value: number.value.slice(0, 60),
+      unit: number.unit?.slice(0, 30) ?? null,
+    })),
   }));
 }
 
@@ -106,7 +113,6 @@ async function generateCandidate(input: {
   if (input.job.language === "en") {
     const prompt = sharedSummaryPrompt({
       clusterVersion: input.job.clusterVersion, isUpdate: input.job.isUpdate, isSensitive: input.job.isSensitive,
-      evidenceStrength: input.job.evidenceStrength, evidencePolicy: input.job.evidenceResult,
       evidence,
     });
     return structured({ provider: input.provider, task: "summarization", prompt,

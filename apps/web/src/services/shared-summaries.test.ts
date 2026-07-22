@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { SummaryClaim, SummaryJob } from "@/data/intelligence";
-import { IntelligenceProviderError, type StorySummaryProvider } from "@/lib/intelligence/provider";
+import { estimatedInputUnits, IntelligenceProviderError, type StorySummaryProvider } from "@/lib/intelligence/provider";
 import type { SharedSummary } from "@/lib/intelligence/schemas";
 import { runSharedSummaryBatch } from "@/services/shared-summaries";
 
@@ -50,6 +50,18 @@ describe("shared summary orchestration", () => {
       modelMetadata: expect.objectContaining({ generationCalls: 1, verification: "deterministic-local-v2" }),
     }));
     expect(ai.generateStructured).toHaveBeenCalledTimes(1);
+  });
+
+  it("sends a compact story evidence prompt to the provider", async () => {
+    const ai = provider([canonical]);
+    await runSharedSummaryBatch({ provider: ai, quota, now: () => at, dependencies });
+    const prompt = vi.mocked(ai.generateStructured).mock.calls[0]?.[0].prompt ?? "";
+    expect(estimatedInputUnits(prompt)).toBeLessThan(450);
+    expect(prompt).toContain("\"id\":\"article-1\"");
+    expect(prompt).toContain("\"excerpt\":\"Applications are open");
+    expect(prompt).not.toContain("canonicalUrl");
+    expect(prompt).not.toContain("publisherFamilyKey");
+    expect(prompt).not.toContain("evidencePolicy");
   });
 
   it("fails closed on deterministic numeric drift without spending a second request", async () => {

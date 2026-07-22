@@ -25,7 +25,7 @@ export const serverEnvironmentSchema = z.object({
   INTELLIGENCE_LEASE_SECONDS: z.coerce.number().int().min(60).max(900).default(300),
   INTELLIGENCE_CANDIDATE_LIMIT: z.coerce.number().int().min(1).max(20).default(12),
   INTELLIGENCE_CANDIDATE_LOOKBACK_HOURS: z.coerce.number().int().min(1).max(168).default(96),
-  SHARED_SUMMARY_BATCH_SIZE: z.coerce.number().int().min(1).max(10).default(4),
+  SHARED_SUMMARY_BATCH_SIZE: z.coerce.number().int().min(1).max(10).default(1),
   SHARED_SUMMARY_LEASE_SECONDS: z.coerce.number().int().min(60).max(900).default(420),
   DELIVERY_SCHEDULER_BATCH_SIZE: z.coerce.number().int().min(1).max(200).default(50),
   PERSONALIZATION_BATCH_SIZE: z.coerce.number().int().min(1).max(50).default(10),

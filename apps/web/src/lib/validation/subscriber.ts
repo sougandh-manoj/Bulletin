@@ -83,7 +83,7 @@ export const subscriberPreferencesBaseSchema = z.object({
     storyCount: z
       .number()
       .int()
-      .min(PRODUCT.limits.stories.min, "Choose at least three stories.")
+      .min(PRODUCT.limits.stories.min, "Choose at least four stories.")
       .max(PRODUCT.limits.stories.max, "Choose no more than 32 stories."),
     frequency: z.enum(DELIVERY_FREQUENCIES),
     weeklyDay: z.enum(WEEKDAYS).optional(),
@@ -102,7 +102,7 @@ export const subscriberPreferencesSchema = subscriberPreferencesBaseSchema
       context.addIssue({
         code: "custom",
         path: ["storyCount"],
-        message: `Choose ${storyRange.min} to ${storyRange.max} stories so every selected category gets three or four.`,
+        message: `Choose ${storyRange.min} stories so every selected category gets four.`,
       });
     }
     if (
@@ -190,7 +190,7 @@ export const managedPreferencesSchema = subscriberPreferencesBaseSchema
       context.addIssue({
         code: "custom",
         path: ["storyCount"],
-        message: `Choose ${storyRange.min} to ${storyRange.max} stories so every selected category gets three or four.`,
+        message: `Choose ${storyRange.min} stories so every selected category gets four.`,
       });
     }
     if (

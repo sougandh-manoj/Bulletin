@@ -277,7 +277,7 @@ export default function Home() {
                 <p className={styles.eyebrow}>Your routine</p>
                 <h2 id="schedule-title">Delivered when you choose to read.</h2>
                 <p>
-                  Get three or four stories from every selected category, in English, Hindi, or Malayalam, at the
+                  Get four stories from every selected category, in English, Hindi, or Malayalam, at the
                   exact local delivery time that fits your day.
                 </p>
               </div>

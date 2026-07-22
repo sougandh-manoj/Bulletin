@@ -35,7 +35,7 @@ describe.skipIf(!localOnly)("Phase 10 local load and scheduler concurrency", () 
         categories: ["india", "technology-ai"],
         custom_topics: [],
         excluded_topics: [],
-        story_count: 3,
+        story_count: 4,
         theme: "light-editorial",
       })));
       if (preferenceError) throw preferenceError;
@@ -77,7 +77,7 @@ describe.skipIf(!localOnly)("Phase 10 local load and scheduler concurrency", () 
             p_categories: ["india", "technology-ai"],
             p_custom_topics: [],
             p_excluded_topics: [],
-            p_story_count: 3,
+            p_story_count: 4,
             p_theme: "light-editorial",
             p_frequency: "daily",
             p_weekly_day: null,

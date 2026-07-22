@@ -18,7 +18,7 @@ const context: PersonalizationContext = {
   categories: ["technology-ai", "science", "health"],
   customTopics: [],
   excludedTopics: [],
-  storyCount: 3,
+  storyCount: 12,
   scheduledFor: "2026-07-19T02:30:00.000Z",
   windowStartedAt: "2026-07-18T02:30:00.000Z",
   windowEndedAt: "2026-07-19T02:30:00.000Z",
@@ -124,7 +124,7 @@ describe("Phase 8 deterministic personalization rules", () => {
     const fiveStoryContext = {
       ...context,
       categories: [...context.categories, "business-economy"] as NewsCategory[],
-      storyCount: 12,
+      storyCount: 16,
     };
     const technology = Array.from({ length: 4 }, (_, index) => candidate({
       category: "technology-ai",
@@ -134,24 +134,27 @@ describe("Phase 8 deterministic personalization rules", () => {
       candidate({ category: "science", centralTopics: ["lunar science"] }),
       candidate({ category: "science", centralTopics: ["ocean science"] }),
       candidate({ category: "science", centralTopics: ["climate science"] }),
+      candidate({ category: "science", centralTopics: ["space science"] }),
       candidate({ category: "health", centralTopics: ["public health"] }),
       candidate({ category: "health", centralTopics: ["clinical care"] }),
       candidate({ category: "health", centralTopics: ["hospital capacity"] }),
+      candidate({ category: "health", centralTopics: ["preventive care"] }),
       candidate({ category: "business-economy", centralTopics: ["economic policy"] }),
       candidate({ category: "business-economy", centralTopics: ["trade policy"] }),
       candidate({ category: "business-economy", centralTopics: ["industry output"] }),
+      candidate({ category: "business-economy", centralTopics: ["employment growth"] }),
     ];
     const decision = personalize(fiveStoryContext, [...technology, ...alternatives]);
-    expect(decision.selected).toHaveLength(12);
-    expect(decision.selected.filter((item) => item.category === "technology-ai")).toHaveLength(3);
-    expect(decision.selected.filter((item) => item.subjectKey === "semiconductor policy")).toHaveLength(1);
+    expect(decision.selected).toHaveLength(16);
+    expect(decision.selected.filter((item) => item.category === "technology-ai")).toHaveLength(4);
+    expect(decision.selected.filter((item) => item.subjectKey === "semiconductor policy")).toHaveLength(2);
   });
 
-  it("reserves three available stories for every selected category before filling extras", () => {
+  it("reserves four available stories for every selected category before filling extras", () => {
     const categories: NewsCategory[] = [
       "india", "world", "startups", "technology-ai", "education-careers", "entertainment",
     ];
-    const coverageContext = { ...context, categories, storyCount: 18 };
+    const coverageContext = { ...context, categories, storyCount: 24 };
     const inventory = categories.flatMap((category) => [
       candidate({ category, centralTopics: [`${category}-one`] }),
       candidate({ category, centralTopics: [`${category}-two`] }),
@@ -159,9 +162,9 @@ describe("Phase 8 deterministic personalization rules", () => {
       candidate({ category, centralTopics: [`${category}-four`] }),
     ]);
     const decision = personalize(coverageContext, inventory);
-    expect(decision.selected).toHaveLength(18);
+    expect(decision.selected).toHaveLength(24);
     for (const category of categories) {
-      expect(decision.selected.filter((item) => item.category === category)).toHaveLength(3);
+      expect(decision.selected.filter((item) => item.category === category)).toHaveLength(4);
     }
   });
 

@@ -48,7 +48,7 @@ const preferences = {
   categories: ["india"],
   customTopics: [],
   excludedTopics: [],
-  storyCount: 3,
+  storyCount: 4,
   frequency: "daily",
   deliveryTime: "08:00",
   timezone: "Asia/Kolkata",

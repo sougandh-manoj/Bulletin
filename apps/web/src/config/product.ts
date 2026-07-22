@@ -145,14 +145,14 @@ export const PRODUCT = {
   defaultCountryCode: "IN",
   defaultLanguage: "en",
   defaultTheme: "light-editorial",
-  defaultStoryCount: 3,
+  defaultStoryCount: 4,
   defaultFrequency: "weekdays",
   defaultDeliveryTime: "08:00",
   limits: {
     categories: { min: 1, max: 8 },
     customTopics: 5,
     excludedTopics: 5,
-    stories: { min: 3, max: 32, perCategoryMin: 3, perCategoryMax: 4 },
+    stories: { min: 4, max: 32, perCategoryMin: 4, perCategoryMax: 4 },
   },
   consentVersion: "2026-07-12",
 } as const;

@@ -416,9 +416,8 @@ export default function ManageBriefing({
     const categories = selected
       ? draft.categories.filter((item) => item !== category)
       : [...draft.categories, category];
-    const range = storyCountRange(categories.length);
     update("categories", categories);
-    update("storyCount", Math.max(range.min, Math.min(range.max, draft.storyCount)));
+    update("storyCount", storyCountRange(categories.length).min);
   };
 
   const save = async (event: FormEvent) => {
@@ -675,29 +674,27 @@ export default function ManageBriefing({
           <div className={styles.manageStoryControl}>
             <div>
               <label htmlFor="manage-count">Stories in each briefing</label>
-              <p>{draft.storyCount} stories total — three or four from every selected category.</p>
+              <p>4 stories from every selected category · {draft.storyCount} total.</p>
             </div>
             <div className={styles.manageStepper}>
               <button
                 type="button"
                 aria-label="Decrease story count"
-                disabled={draft.storyCount <= storyCountRange(draft.categories.length).min}
-                onClick={() => update("storyCount", Math.max(storyCountRange(draft.categories.length).min, draft.storyCount - 1))}
+                disabled
               >−</button>
               <input
                 id="manage-count"
                 type="number"
                 inputMode="numeric"
-                min={storyCountRange(draft.categories.length).min}
-                max={storyCountRange(draft.categories.length).max}
-                value={draft.storyCount}
-                onChange={(event) => update("storyCount", Number(event.target.value))}
+                min={4}
+                max={4}
+                value={4}
+                readOnly
               />
               <button
                 type="button"
                 aria-label="Increase story count"
-                disabled={draft.storyCount >= storyCountRange(draft.categories.length).max}
-                onClick={() => update("storyCount", Math.min(storyCountRange(draft.categories.length).max, draft.storyCount + 1))}
+                disabled
               >+</button>
             </div>
           </div>

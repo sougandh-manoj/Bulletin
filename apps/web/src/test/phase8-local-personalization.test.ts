@@ -53,7 +53,7 @@ describe.skipIf(!localOnly)("Phase 8 local deterministic personalization fixture
         categories: ["science"],
         custom_topics: [],
         excluded_topics: [],
-        story_count: 3,
+        story_count: 4,
         theme: "light-editorial",
       });
       if (preferenceError) throw preferenceError;

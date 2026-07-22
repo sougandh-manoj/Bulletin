@@ -19,7 +19,7 @@ describe("product configuration", () => {
     expect(PRODUCT.defaultCountryCode).toBe("IN");
     expect(PRODUCT.defaultLanguage).toBe("en");
     expect(PRODUCT.defaultTheme).toBe("light-editorial");
-    expect(PRODUCT.defaultStoryCount).toBe(3);
+    expect(PRODUCT.defaultStoryCount).toBe(4);
     expect(PRODUCT.defaultFrequency).toBe("weekdays");
     expect(PRODUCT.defaultDeliveryTime).toBe("08:00");
     expect(PRODUCT.landing.title).toBe("The news you need. Nothing you don’t.");

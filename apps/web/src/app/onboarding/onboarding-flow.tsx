@@ -970,9 +970,8 @@ export default function OnboardingFlow() {
     const categories = selected
       ? draft.categories.filter((item) => item !== category)
       : [...draft.categories, category];
-    const range = storyCountRange(categories.length);
     updateDraft("categories", categories);
-    updateDraft("storyCount", Math.max(range.min, Math.min(range.max, draft.storyCount)));
+    updateDraft("storyCount", storyCountRange(categories.length).min);
   };
 
   const selectedCountry = countries.find(
@@ -1419,19 +1418,13 @@ export default function OnboardingFlow() {
                     <div className={styles.storyControl}>
                       <div>
                         <label htmlFor="story-count">Stories in each briefing</label>
-                        <p>{draft.storyCount} stories total — three or four from every selected category.</p>
+                        <p>4 stories from every selected category · {draft.storyCount} total.</p>
                       </div>
                       <div className={styles.stepper}>
                         <button
                           type="button"
                           aria-label="Decrease story count"
-                          onClick={() =>
-                            updateDraft(
-                              "storyCount",
-                              Math.max(storyCountRange(draft.categories.length).min, draft.storyCount - 1),
-                            )
-                          }
-                          disabled={draft.storyCount <= storyCountRange(draft.categories.length).min}
+                          disabled
                         >
                           −
                         </button>
@@ -1439,32 +1432,23 @@ export default function OnboardingFlow() {
                           id="story-count"
                           type="number"
                           inputMode="numeric"
-                          min={storyCountRange(draft.categories.length).min}
-                          max={storyCountRange(draft.categories.length).max}
-                          value={draft.storyCount}
-                          onChange={(event) =>
-                            updateDraft("storyCount", Number(event.target.value))
-                          }
-                          onBlur={() => validateField("storyCount")}
+                          min={4}
+                          max={4}
+                          value={4}
+                          readOnly
                           aria-invalid={Boolean(errors.storyCount)}
                           aria-describedby={`story-helper ${errors.storyCount ? "story-count-error" : ""}`}
                         />
                         <button
                           type="button"
                           aria-label="Increase story count"
-                          onClick={() =>
-                            updateDraft(
-                              "storyCount",
-                              Math.min(storyCountRange(draft.categories.length).max, draft.storyCount + 1),
-                            )
-                          }
-                          disabled={draft.storyCount >= storyCountRange(draft.categories.length).max}
+                          disabled
                         >
                           +
                         </button>
                       </div>
                       <p className={styles.srOnly} id="story-helper">
-                        Choose between three and four stories for every selected category.
+                        Four stories will be selected from every selected category.
                       </p>
                       <InlineError id="story-count-error" message={errors.storyCount} />
                     </div>

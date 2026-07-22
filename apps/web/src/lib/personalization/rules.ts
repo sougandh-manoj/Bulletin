@@ -3,7 +3,7 @@ import type {
   SupportedLanguage,
 } from "@/config/product";
 
-export const PERSONALIZATION_VERSION = "phase-10-category-coverage-v3";
+export const PERSONALIZATION_VERSION = "phase-10-category-coverage-v4";
 
 export const PERSONALIZATION_RULES = Object.freeze({
   // A verified story in a selected category reaches 30 even at the baseline
@@ -246,11 +246,11 @@ function rerankForDiversity(
   const selected: ScoredCandidate[] = [];
   const categoryCounts = new Map<NewsCategory, number>();
   const subjectCounts = new Map<string, number>();
-  const targetCount = Math.max(context.storyCount, context.categories.length * 3);
+  const targetCount = Math.max(context.storyCount, context.categories.length * 4);
 
   // Coverage comes before global score: take the best available story from
-  // every selected category three times, then use score and diversity for the rest.
-  for (let round = 0; round < 3 && selected.length < targetCount; round += 1) {
+  // every selected category four times, then use score and diversity for the rest.
+  for (let round = 0; round < 4 && selected.length < targetCount; round += 1) {
     for (const category of context.categories) {
       if (selected.length >= targetCount) break;
       const choices = remaining

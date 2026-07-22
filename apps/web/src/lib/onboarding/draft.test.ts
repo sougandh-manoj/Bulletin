@@ -16,7 +16,7 @@ const completeDraft: OnboardingDraft = {
   stateRegion: "Karnataka",
   city: "Bengaluru",
   categories: ["india", "technology-ai"],
-  storyCount: 6,
+  storyCount: 8,
   customTopics: ["Space policy"],
   excludedTopics: ["Celebrity gossip"],
   consent: true,
@@ -28,7 +28,7 @@ describe("onboarding draft behavior", () => {
 
     expect(draft.countryCode).toBe("IN");
     expect(draft.language).toBe("en");
-    expect(draft.storyCount).toBe(3);
+    expect(draft.storyCount).toBe(4);
     expect(draft.theme).toBe("light-editorial");
     expect(draft.consent).toBe(false);
   });

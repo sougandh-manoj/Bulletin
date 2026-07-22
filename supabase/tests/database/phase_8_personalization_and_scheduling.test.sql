@@ -4,6 +4,8 @@ create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions, pg_catalog;
 select plan(40);
 
+update public.system_controls set personalization_worker_paused = false where singleton;
+
 select ok(exists(
   select 1 from pg_catalog.pg_enum enum_value
   join pg_catalog.pg_type enum_type on enum_type.oid = enum_value.enumtypid
@@ -53,7 +55,7 @@ insert into public.subscriber_preferences (
 ) values (
   '80000000-0000-4000-8000-000000000001', 'IN', 'Kerala', 'Kochi', 'en',
   array['technology-ai']::public.news_category[], array['solar energy'],
-  array['celebrity gossip'], 3, 'light-editorial'
+  array['celebrity gossip'], 4, 'light-editorial'
 );
 insert into public.subscriber_schedules (
   subscriber_id, frequency, local_delivery_time, timezone, next_delivery_at
@@ -261,7 +263,7 @@ insert into public.subscriber_preferences (
   subscriber_id, country_code, state_region, language, categories, story_count, theme
 ) values (
   '80000000-0000-4000-8000-000000000002', 'IN', 'Kerala', 'hi',
-  array['technology-ai']::public.news_category[], 2, 'light-editorial'
+  array['technology-ai']::public.news_category[], 4, 'light-editorial'
 );
 insert into public.subscriber_schedules (
   subscriber_id, frequency, local_delivery_time, timezone, next_delivery_at
@@ -300,7 +302,7 @@ insert into public.subscriber_preferences (
   subscriber_id, country_code, state_region, language, categories, story_count, theme
 ) values (
   '80000000-0000-4000-8000-000000000003', 'IN', 'Kerala', 'en',
-  array['india']::public.news_category[], 1, 'light-editorial'
+  array['india']::public.news_category[], 4, 'light-editorial'
 );
 insert into public.subscriber_schedules (
   subscriber_id, frequency, local_delivery_time, timezone, next_delivery_at

@@ -159,6 +159,34 @@ function tokenDice(left: string, right: string): number {
   return dice(actionTokens(left), actionTokens(right));
 }
 
+const TITLE_STOP_WORDS = new Set([
+  ...ACTION_STOP_WORDS,
+  "breaking", "exclusive", "explained", "live", "photos", "today", "video",
+]);
+
+function titleTokens(value: string): string[] {
+  return normalized(value).split(" ").filter((token) =>
+    token.length >= 3 && !TITLE_STOP_WORDS.has(token),
+  );
+}
+
+/** Title-only duplicate score used by the simplified story pipeline. */
+export function titleSimilarity(left: string, right: string): number {
+  const normalizedLeft = normalized(left);
+  const normalizedRight = normalized(right);
+  if (!normalizedLeft || !normalizedRight) return 0;
+  if (normalizedLeft === normalizedRight) return 1;
+  const leftTokens = titleTokens(left);
+  const rightTokens = titleTokens(right);
+  if (Math.min(leftTokens.length, rightTokens.length) < 3) return 0;
+  const rightSet = new Set(rightTokens);
+  const shared = new Set(leftTokens.filter((token) => rightSet.has(token))).size;
+  if (shared < 3) return 0;
+  const diceScore = (2 * shared) / (new Set(leftTokens).size + rightSet.size);
+  const containment = shared / Math.min(new Set(leftTokens).size, rightSet.size);
+  return Math.max(diceScore, containment * 0.92);
+}
+
 function rawTokenDice(left: string, right: string): number {
   return dice(normalized(left).split(" ").filter(Boolean), normalized(right).split(" ").filter(Boolean));
 }

@@ -4,6 +4,8 @@ create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions, pg_catalog;
 select plan(67);
 
+update public.system_controls set intelligence_worker_paused = false where singleton;
+
 select is((select count(*)::integer from public.sources where is_active), 48, 'Phase 7 does not activate another source');
 select is((select count(*)::integer from public.sources where not is_active), 47, 'all 47 disabled sources remain disabled');
 select is((select count(*)::integer from public.sources), 95, 'source catalogue remains unchanged');

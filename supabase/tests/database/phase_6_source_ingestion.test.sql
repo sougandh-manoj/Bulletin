@@ -3,6 +3,8 @@ begin;
 create extension if not exists pgtap with schema extensions;
 select plan(50);
 
+update public.system_controls set ingestion_worker_paused = false where singleton;
+
 select is((select count(*)::integer from public.sources where catalogue_key is not null), 95, 'catalogue contains 95 reviewed feeds');
 select is((select count(*)::integer from public.sources where technical_status = 'verified'), 92, '92 feeds passed final technical verification');
 select is((select count(*)::integer from public.sources where is_active), 48, '48 feeds are fail-closed approved and scheduled');

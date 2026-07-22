@@ -43,13 +43,14 @@ function candidate(overrides: Partial<ClusterCandidate["snapshot"]> = {}): Clust
 }
 
 describe("story intelligence orchestration", () => {
-  const claim = vi.fn(); const stage = vi.fn(); const candidates = vi.fn(); const commit = vi.fn();
+  const claim = vi.fn(); const stage = vi.fn(); const candidates = vi.fn(); const commit = vi.fn(); const promote = vi.fn();
   const finish = vi.fn(); const heartbeat = vi.fn();
-  const dependencies = { claim, stage, candidates, commit, finish, heartbeat };
+  const dependencies = { claim, stage, candidates, commit, promote, finish, heartbeat };
 
   beforeEach(() => {
     vi.clearAllMocks(); stage.mockResolvedValue(true); candidates.mockResolvedValue([]); finish.mockResolvedValue(true); heartbeat.mockResolvedValue(undefined);
     commit.mockResolvedValue({ clusterId: "cluster-new", clusterVersion: 1, clusterStatus: "verified", evidenceStrength: "sufficient", independentEvidenceUnits: 1, meaningfulUpdate: false, summaryQueued: true });
+    promote.mockImplementation(async ({ commit: value }) => value);
   });
 
   it("stages local intelligence and atomically commits a new factual event", async () => {
@@ -59,22 +60,26 @@ describe("story intelligence orchestration", () => {
     expect(stage).toHaveBeenCalledWith(expect.objectContaining({
       classification: expect.objectContaining({ status: "ready", category: "government-schemes" }),
       fingerprint: expect.stringMatching(/^[0-9a-f]{64}$/),
-      metadata: expect.objectContaining({ analysisVersion: "phase-7-local-v3" }),
+      metadata: expect.objectContaining({ analysisVersion: "title-only-v1", policyVersion: "title-only-v1" }),
     }));
-    expect(commit).toHaveBeenCalledWith(expect.objectContaining({ preferredClusterId: null, decisionMethod: "local-deterministic-new-event" }));
+    expect(commit).toHaveBeenCalledWith(expect.objectContaining({ preferredClusterId: null, decisionMethod: "normalized-title-unique-story" }));
+    expect(promote).toHaveBeenCalled();
   });
 
-  it("does not merge a rule-compatible candidate when explicit facts conflict", async () => {
+  it("does not merge a candidate whose title is unrelated", async () => {
     claim.mockResolvedValue([article()]);
     candidates.mockResolvedValue([candidate({ stateRegion: "Delhi", city: "Delhi", entities: { people: [], organizations: ["Other Agency"], locations: ["Delhi"] } })]);
     await runIntelligenceBatch({ now: () => at, dependencies });
     expect(commit).toHaveBeenCalledWith(expect.objectContaining({ preferredClusterId: null }));
   });
 
-  it("uses local deterministic agreement even when the candidate is sensitive", async () => {
-    claim.mockResolvedValue([article()]); candidates.mockResolvedValue([candidate({ isSensitive: true })]);
+  it("merges sufficiently similar titles without using category, geography, or sensitivity", async () => {
+    claim.mockResolvedValue([article()]); candidates.mockResolvedValue([candidate({
+      isSensitive: true, category: "world", stateRegion: "Delhi",
+      evidenceArticles: [article("evidence-1", { title: "Agency opens ₹10 crore grant for applicants" })],
+    })]);
     await runIntelligenceBatch({ now: () => at, dependencies });
-    expect(commit).toHaveBeenCalledWith(expect.objectContaining({ preferredClusterId: "cluster-1", decisionMethod: "local-deterministic-event-consistency" }));
+    expect(commit).toHaveBeenCalledWith(expect.objectContaining({ preferredClusterId: "cluster-1", decisionMethod: "normalized-title-similarity" }));
   });
 
   it("quarantines a locally detected opinion before clustering", async () => {

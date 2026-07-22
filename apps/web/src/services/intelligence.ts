@@ -9,6 +9,7 @@ import {
   findClusterCandidates,
   finishArticleClaim,
   IntelligenceDataError,
+  promoteClusterForSummary,
   recordIntelligenceHeartbeat,
   stageArticleIntelligence,
   type ClaimedArticle,
@@ -16,10 +17,8 @@ import {
   type CommitResult,
 } from "@/data/intelligence";
 import {
-  crossSourceDuplicateKind,
-  evaluateEventConsistency,
   eventFingerprint,
-  isMeaningfulEventUpdate,
+  titleSimilarity,
   type EventFacts,
 } from "@/lib/intelligence/deterministic";
 import { analyzeArticleLocally } from "@/lib/intelligence/local-analysis";
@@ -30,13 +29,13 @@ const logger = createLogger("story-intelligence");
 
 type IntelligenceDependencies = {
   claim: typeof claimArticles; stage: typeof stageArticleIntelligence; candidates: typeof findClusterCandidates;
-  commit: typeof commitArticleToCluster; finish: typeof finishArticleClaim;
+  commit: typeof commitArticleToCluster; promote: typeof promoteClusterForSummary; finish: typeof finishArticleClaim;
   heartbeat: typeof recordIntelligenceHeartbeat;
 };
 
 const defaultDependencies: IntelligenceDependencies = {
   claim: claimArticles, stage: stageArticleIntelligence, candidates: findClusterCandidates,
-  commit: commitArticleToCluster, finish: finishArticleClaim,
+  commit: commitArticleToCluster, promote: promoteClusterForSummary, finish: finishArticleClaim,
   heartbeat: recordIntelligenceHeartbeat,
 };
 
@@ -50,16 +49,6 @@ function facts(classification: ArticleClassification): EventFacts {
     entities: classification.entities, geography: classification.geography, eventTime: classification.eventTime,
     eventType: classification.eventType, keyAction: classification.keyAction, keyOutcome: classification.keyOutcome,
     importantNumbers: classification.importantNumbers,
-  };
-}
-
-function candidateFacts(candidate: ClusterCandidate): EventFacts {
-  return {
-    entities: candidate.snapshot.entities,
-    geography: { countryCode: candidate.snapshot.countryCode, stateRegion: candidate.snapshot.stateRegion, city: candidate.snapshot.city },
-    eventTime: candidate.snapshot.eventTime, eventType: candidate.snapshot.eventType,
-    keyAction: candidate.snapshot.keyAction, keyOutcome: candidate.snapshot.keyOutcome,
-    importantNumbers: candidate.snapshot.importantNumbers,
   };
 }
 
@@ -84,31 +73,29 @@ function retryableFailure(error: unknown): boolean {
 function chooseCluster(input: {
   article: ClaimedArticle; classification: ArticleClassification; candidates: ClusterCandidate[];
 }): { candidate: ClusterCandidate | null; reasonCodes: string[] } {
-  for (const candidate of input.candidates) {
-    const deterministic = evaluateEventConsistency(facts(input.classification), candidateFacts(candidate));
-    if (deterministic.decision === "reject") continue;
-    if (deterministic.decision === "accept") {
-      return { candidate, reasonCodes: deterministic.reasonCodes };
-    }
-    const articleText = `${input.article.title}\n${input.article.description ?? ""}`;
-    const syndicated = candidate.snapshot.evidenceArticles.some((item) =>
-      item.publisherFamilyKey !== input.article.publisherFamilyKey
-      && crossSourceDuplicateKind(articleText, `${item.title}\n${item.description ?? ""}`) !== null,
-    );
-    if (syndicated) {
-      return { candidate, reasonCodes: [...deterministic.reasonCodes, "cross-source-syndicated-match"] };
-    }
+  const ranked = input.candidates.map((candidate) => ({
+    candidate,
+    score: Math.max(0, ...candidate.snapshot.evidenceArticles.map((item) =>
+      titleSimilarity(input.article.title, item.title),
+    )),
+  })).sort((left, right) => right.score - left.score
+    || right.candidate.snapshot.latestEventAt.localeCompare(left.candidate.snapshot.latestEventAt)
+    || left.candidate.clusterId.localeCompare(right.candidate.clusterId));
+  const best = ranked[0];
+  if (best && best.score >= 0.68) {
+    return { candidate: best.candidate, reasonCodes: ["title-similarity-match", `title-score-${best.score.toFixed(3)}`] };
   }
-  return { candidate: null, reasonCodes: ["no-locally-confirmed-event-candidate"] };
+  return { candidate: null, reasonCodes: ["no-similar-title"] };
 }
 
 function duplicateEvidence(article: ClaimedArticle, candidate: ClusterCandidate | null) {
   if (!candidate) return { id: null, kind: null } as const;
-  const articleText = `${article.title}\n${article.description ?? ""}`;
   for (const item of candidate.snapshot.evidenceArticles) {
     if (item.publisherFamilyKey === article.publisherFamilyKey) continue;
-    const kind = crossSourceDuplicateKind(articleText, `${item.title}\n${item.description ?? ""}`);
-    if (kind) return { id: item.id, kind };
+    const score = titleSimilarity(article.title, item.title);
+    if (score >= 0.68) {
+      return { id: item.id, kind: score === 1 ? "cross-source-exact" as const : "cross-source-near" as const };
+    }
   }
   return { id: null, kind: null } as const;
 }
@@ -138,24 +125,21 @@ async function processArticle(input: {
     const staged = await dependencies.stage({
       article, classification,
       fingerprint: eventFingerprint(facts(classification), article.publishedAt, article.normalizedTitle),
-      metadata: { policyVersion: "phase-7-local-v3", analysisVersion: "phase-7-local-v3", schemaVersion: "phase-7-v1" },
+      metadata: { policyVersion: "title-only-v1", analysisVersion: "title-only-v1", schemaVersion: "phase-7-v1" },
     });
     if (!staged) throw new IntelligenceDataError("article-lease-lost");
     const candidates = await dependencies.candidates({ articleId: article.id, limit: input.candidateLimit, lookbackHours: input.candidateLookbackHours });
     const choice = chooseCluster({ article, classification, candidates });
     const duplicate = duplicateEvidence(article, choice.candidate);
-    const meaningful = Boolean(
-      choice.candidate
-      && !duplicate.kind
-      && isMeaningfulEventUpdate(facts(classification), candidateFacts(choice.candidate)),
-    );
-    return await dependencies.commit({
+    const meaningful = false;
+    const committed = await dependencies.commit({
       article, preferredClusterId: choice.candidate?.clusterId ?? null,
-      decisionMethod: choice.candidate ? "local-deterministic-event-consistency" : "local-deterministic-new-event",
-      decisionMetadata: { reasonCodes: choice.reasonCodes, ruleScore: choice.candidate?.ruleScore ?? null, analysisVersion: "phase-7-local-v3" },
+      decisionMethod: choice.candidate ? "normalized-title-similarity" : "normalized-title-unique-story",
+      decisionMetadata: { reasonCodes: choice.reasonCodes, ruleScore: choice.candidate?.ruleScore ?? null, analysisVersion: "title-only-v1" },
       isMeaningfulUpdate: meaningful, hasMaterialConflict: false, conflicts: [],
       evidenceDuplicateOfArticleId: duplicate.id, evidenceDuplicateKind: duplicate.kind, now: input.now(),
     });
+    return await dependencies.promote({ commit: committed, now: input.now() });
   } catch (error) {
     const at = input.now();
     const errorCode = failureCode(error);

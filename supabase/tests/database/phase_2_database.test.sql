@@ -4,6 +4,14 @@ create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions, pg_catalog;
 select plan(61);
 
+update public.system_controls set
+  email_delivery_enabled = true,
+  delivery_worker_paused = false,
+  personalization_worker_paused = false,
+  ingestion_worker_paused = false,
+  intelligence_worker_paused = false
+where singleton;
+
 select ok(
   exists (
     select 1
@@ -90,7 +98,7 @@ create temporary table created_subscriber as
 select * from public.create_pending_subscriber(
   'reader@example.com', 'Reader', 'IN', 'Kerala', 'Kochi', 'en',
   array['india', 'technology-ai']::public.news_category[],
-  array['space']::text[], array['celebrity gossip']::text[], 3::smallint,
+  array['space']::text[], array['celebrity gossip']::text[], 8::smallint,
   'light-editorial', 'daily', null, '08:30'::time, 'Asia/Kolkata',
   '2026-07-12 10:00:00+00', '2026-07-12',
   (select anchor_at from verification_test_clock)
@@ -102,7 +110,7 @@ select is((select count(*)::integer from public.subscribers where email = 'reade
 create temporary table duplicate_attempt as
 select * from public.create_pending_subscriber(
   'reader@example.com', 'Attacker overwrite', 'IN', 'Delhi', null, 'hi',
-  array['politics']::public.news_category[], '{}'::text[], '{}'::text[], 10::smallint,
+  array['politics']::public.news_category[], '{}'::text[], '{}'::text[], 4::smallint,
   'dark-intelligence', 'weekly', 'monday', '09:00'::time, 'Asia/Kolkata',
   '2026-07-12 10:01:00+00', 'changed', '2026-07-12 10:01:00+00'
 );
@@ -112,7 +120,7 @@ select is((select name from public.subscribers where email = 'reader@example.com
 select is(
   (select story_count::integer from public.subscriber_preferences
    where subscriber_id = (select subscriber_id from created_subscriber)),
-  3,
+  8,
   'duplicate signup does not overwrite preferences'
 );
 
@@ -182,7 +190,7 @@ select is(
   public.save_subscriber_preferences(
     (select subscriber_id from created_subscriber), 1, 'Reader Updated', 'IN', 'Karnataka',
     'Bengaluru', 'en', array['india', 'science']::public.news_category[],
-    array['space']::text[], array['celebrity gossip']::text[], 4::smallint, 'light-editorial',
+    array['space']::text[], array['celebrity gossip']::text[], 8::smallint, 'light-editorial',
     'weekdays', null, '07:45'::time, 'Asia/Kolkata', '2026-07-12 10:10:00+00'
   ),
   2::bigint,
@@ -314,7 +322,7 @@ select ok(
 create temporary table expired_token_subscriber as
 select * from public.create_pending_subscriber(
   'expired-token@example.com', 'Expired Token', 'IN', 'Kerala', null, 'en',
-  array['india']::public.news_category[], '{}'::text[], '{}'::text[], 3::smallint,
+  array['india']::public.news_category[], '{}'::text[], '{}'::text[], 4::smallint,
   'light-editorial', 'daily', null, '08:30'::time, 'Asia/Kolkata',
   '2026-07-12 10:00:00+00', '2026-07-12',
   (select anchor_at from verification_test_clock)
@@ -366,7 +374,7 @@ from generate_series(1, 100) as value;
 insert into public.subscriber_preferences (
   subscriber_id, country_code, state_region, language, categories, story_count, theme
 )
-select id, 'IN', 'Karnataka', 'en', array['india']::public.news_category[], 3, 'light-editorial'
+select id, 'IN', 'Karnataka', 'en', array['india']::public.news_category[], 4, 'light-editorial'
 from public.subscribers where email like 'bulk-%@example.com';
 
 insert into public.subscriber_schedules (
@@ -480,7 +488,7 @@ from update_stress_subscriber;
 insert into public.subscriber_preferences (
   subscriber_id, country_code, state_region, language, categories, story_count, theme
 )
-select id, 'IN', 'Karnataka', 'en', array['science']::public.news_category[], 3, 'light-editorial'
+select id, 'IN', 'Karnataka', 'en', array['science']::public.news_category[], 4, 'light-editorial'
 from update_stress_subscriber;
 insert into public.subscriber_schedules (
   subscriber_id, frequency, local_delivery_time, timezone, next_delivery_at
@@ -496,7 +504,7 @@ begin
     perform public.save_subscriber_preferences(
       (select id from update_stress_subscriber), expected_version, 'Update Stress', 'IN',
       'Karnataka', null, 'en', array['science']::public.news_category[], '{}'::text[],
-      '{}'::text[], 3::smallint, 'light-editorial', 'daily', null, '08:00'::time,
+      '{}'::text[], 4::smallint, 'light-editorial', 'daily', null, '08:00'::time,
       'Asia/Kolkata', '2026-07-12 13:00:00+00'::timestamptz + make_interval(secs => expected_version::integer)
     );
   end loop;

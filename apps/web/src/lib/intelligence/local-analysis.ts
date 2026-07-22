@@ -39,7 +39,14 @@ const STRONG_CATEGORY_PATTERNS: Array<{ category: NewsCategory; pattern: RegExp 
   { category: "entertainment", pattern: /\b(?:film|movie|cinema|actor|actress|director|music|television|streaming|box office|bollywood|hollywood)\b|फिल्म|अभिनेता|സിനിമ|നടൻ/iu },
   { category: "sports", pattern: /\b(?:sport(?:s)?|match|tournament|cricket|football|formula\s*1|grand prix|world cup)\b|खेल|क्रिकेट|കായിക|ക്രിക്കറ്റ്/iu },
   { category: "startups", pattern: /\b(?:startup(?:s)?|funding round|venture capital|seed funding|founder(?:s)?)\b/iu },
+  { category: "markets-personal-finance", pattern: /\b(?:stock(?:s)?|share market|sensex|nifty|mutual fund(?:s)?|investment(?:s)?|investor(?:s)?|interest rate(?:s)?|bank deposit(?:s)?|personal finance|income tax|insurance|pension)\b|निवेश|शेयर बाज़ार|വിപണി|നിക്ഷേപം/iu },
+  { category: "climate", pattern: /\b(?:climate change|global warming|carbon emissions?|renewable energy|solar power|wind power|biodiversity|deforestation)\b|जलवायु|पर्यावरण|കാലാവസ്ഥ|പരിസ്ഥിതി/iu },
   { category: "science", pattern: /\b(?:quantum|physics|astronomy|spacecraft|telescope|particle|molecule|scientist(?:s)?|laboratory|research(?:er|ers)?)\b|वैज्ञानिक|अंतरिक्ष|ശാസ്ത്ര|ഗവേഷണം/iu },
+  { category: "technology-ai", pattern: /\b(?:artificial intelligence|machine learning|generative ai|software|smartphone|computer|cybersecurity|robot(?:s|ics)?|semiconductor(?:s)?|chipmaker)\b|तकनीक|സാങ്കേതിക/iu },
+  { category: "government-schemes", pattern: /\b(?:government scheme|welfare scheme|public programme|subsidy|beneficiary|direct benefit transfer)\b|सरकारी योजना|सब्सिडी|സർക്കാർ പദ്ധതി/iu },
+  { category: "business-economy", pattern: /\b(?:economy|economic growth|gdp|inflation|trade deficit|exports?|imports?|company earnings|merger|acquisition|industry output)\b|अर्थव्यवस्था|व्यापार|സമ്പദ്|ബിസിനസ്/iu },
+  { category: "politics", pattern: /\b(?:political party|parliament|election campaign|opposition|ruling party|prime minister|chief minister|minister|congress|bjp)\b|राजनीति|मंत्री|രാഷ്ട്രീയം|മന്ത്രി/iu },
+  { category: "world", pattern: /\b(?:united states|u\.?s\.?|iran|iraq|israel|gaza|ukraine|russia|china|nigeria|afghanistan|pakistan|bangladesh|european union|united nations|foreign minister|airstrike|ceasefire)\b/iu },
 ];
 
 const TOPIC_STOP_WORDS = new Set([
@@ -83,17 +90,21 @@ function unique(values: string[], maximum: number): string[] {
   return result;
 }
 
-function category(input: LocalArticleAnalysisInput, text: string): NewsCategory {
+function category(input: LocalArticleAnalysisInput): NewsCategory {
   const declared = unique(input.feedCategories, 50).filter((item): item is NewsCategory =>
     (NEWS_CATEGORIES as readonly string[]).includes(item),
   );
   const combined = `${input.title} ${input.description ?? ""}`;
   const strongMatch = STRONG_CATEGORY_PATTERNS.find(({ pattern }) => pattern.test(combined));
   if (strongMatch) return strongMatch.category;
+  const normalizedTitle = normalized(input.title);
+  const normalizedDescription = normalized(input.description ?? "");
   const scores = [...NEWS_CATEGORIES].map((candidate) => ({
     candidate,
-    score: CATEGORY_KEYWORDS[candidate].reduce((score, keyword) => score + (text.includes(normalized(keyword)) ? 1 : 0), 0)
-      + (declared.includes(candidate) ? 0.25 : 0),
+    score: CATEGORY_KEYWORDS[candidate].reduce((score, keyword) => score
+      + (normalizedTitle.includes(normalized(keyword)) ? 4 : 0)
+      + (normalizedDescription.includes(normalized(keyword)) ? 1 : 0), 0)
+      + (declared.includes(candidate) ? 2 : 0),
   })).sort((left, right) => right.score - left.score);
   if ((scores[0]?.score ?? 0) > 0) return scores[0].candidate;
   return declared[0] ?? (input.countryCode === "IN" ? "india" : "world");
@@ -162,7 +173,7 @@ export function analyzeArticleLocally(input: LocalArticleAnalysisInput): Article
   const sensitiveFlags = unique(SENSITIVE_PATTERNS
     .filter(({ pattern }) => pattern.test(combined))
     .map(({ flag }) => flag), 11) as ArticleClassification["sensitiveFlags"];
-  const storyCategory = category(input, text);
+  const storyCategory = category(input);
 
   return classificationSchema.parse({
     status: status === "ready" && depth === 0 ? "insufficient-evidence" : status,

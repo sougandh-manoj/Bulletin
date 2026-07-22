@@ -119,4 +119,32 @@ describe("local article analysis", () => {
     }));
     expect(result.category).toBe("health");
   });
+
+  it("does not label clearly international reporting as India because the feed is Indian", () => {
+    const iran = analyzeArticleLocally(article({
+      title: "US conducts another night of strikes on Iran",
+      description: "The attacks heightened tensions around the Strait of Hormuz.",
+      feedCategories: ["india"],
+    }));
+    const nigeria = analyzeArticleLocally(article({
+      title: "Forty people kidnapped by Nigerian gang",
+      description: "The incident was reported in northern Nigeria.",
+      feedCategories: ["india"],
+    }));
+    expect(iran.category).toBe("world");
+    expect(nigeria.category).toBe("world");
+  });
+
+  it("routes climate and personal-finance reporting to their dedicated categories", () => {
+    expect(analyzeArticleLocally(article({
+      title: "UN climate chief calls India a solar superpower",
+      description: "Renewable energy capacity and carbon emissions were discussed.",
+      feedCategories: ["india"],
+    })).category).toBe("climate");
+    expect(analyzeArticleLocally(article({
+      title: "Nifty rises as mutual fund investors increase holdings",
+      description: "Share market gains followed new investment inflows.",
+      feedCategories: ["india"],
+    })).category).toBe("markets-personal-finance");
+  });
 });

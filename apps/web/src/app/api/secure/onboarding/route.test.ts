@@ -30,7 +30,7 @@ const payload = {
   categories: ["india", "technology-ai"],
   customTopics: ["space policy"],
   excludedTopics: ["celebrity gossip"],
-  storyCount: 6,
+  storyCount: 8,
   theme: "light-editorial",
   frequency: "daily",
   deliveryTime: "08:00",

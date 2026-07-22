@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { crossSourceDuplicateKind, evaluateEventConsistency, eventFingerprint, isMeaningfulEventUpdate, type EventFacts } from "@/lib/intelligence/deterministic";
+import { crossSourceDuplicateKind, evaluateEventConsistency, eventFingerprint, isMeaningfulEventUpdate, titleSimilarity, type EventFacts } from "@/lib/intelligence/deterministic";
 
 function event(overrides: Partial<EventFacts> = {}): EventFacts {
   return {
@@ -14,6 +14,17 @@ function event(overrides: Partial<EventFacts> = {}): EventFacts {
 }
 
 describe("deterministic event identity", () => {
+  it("groups only titles with substantial title-word overlap", () => {
+    expect(titleSimilarity(
+      "Agency opens ₹10 crore grant for applicants",
+      "Agency opens 10 crore grant applications",
+    )).toBeGreaterThanOrEqual(0.68);
+    expect(titleSimilarity(
+      "Minister rejects opposition demand in Parliament",
+      "Sikkim tunnel collapse kills ten workers",
+    )).toBe(0);
+  });
+
   it("accepts a same-type event only with factual time, place, or entity anchors", () => {
     expect(evaluateEventConsistency(event(), event()).decision).toBe("accept");
     expect(evaluateEventConsistency(

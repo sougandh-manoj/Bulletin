@@ -4,6 +4,11 @@ create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions, pg_catalog;
 select plan(38);
 
+update public.system_controls set
+  email_delivery_enabled = true,
+  delivery_worker_paused = false
+where singleton;
+
 select has_table('public', 'delivery_send_attempts', 'delivery send attempts are durably audited');
 select has_table('public', 'system_controls', 'owner system controls exist');
 select has_table('public', 'backup_runs', 'backup and restore status is durable');
@@ -15,7 +20,7 @@ select ok(has_function_privilege('service_role', 'public.begin_delivery_send(uui
 insert into public.subscribers (id, email, name, status, verified_at, consent_at, consent_version, unverified_expires_at)
 values ('91000000-0000-4000-8000-000000000001', 'phase9@example.com', 'Phase Nine Reader', 'active', '2026-07-19', '2026-07-01', '2026-07-12', '2026-07-08');
 insert into public.subscriber_preferences (subscriber_id,country_code,state_region,language,categories,story_count,theme)
-values ('91000000-0000-4000-8000-000000000001','IN','Kerala','en',array['technology-ai']::public.news_category[],2,'light-editorial');
+values ('91000000-0000-4000-8000-000000000001','IN','Kerala','en',array['technology-ai']::public.news_category[],4,'light-editorial');
 insert into public.subscriber_schedules (subscriber_id,frequency,local_delivery_time,timezone,next_delivery_at)
 values ('91000000-0000-4000-8000-000000000001','daily','08:00','Asia/Kolkata','2026-07-20 02:30+00');
 

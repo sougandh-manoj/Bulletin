@@ -200,6 +200,23 @@ export async function commitArticleToCluster(input: {
   return data as CommitResult;
 }
 
+export async function promoteClusterForSummary(input: {
+  commit: CommitResult;
+  now: Date;
+  database?: SupabaseClient;
+}): Promise<CommitResult> {
+  const database = input.database ?? getTrustedSupabase();
+  const { data, error } = await database.rpc("promote_title_story_cluster", {
+    p_cluster_id: input.commit.clusterId,
+    p_now: input.now.toISOString(),
+  });
+  dataError(error);
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    throw new IntelligenceDataError("title-story-promotion-missing");
+  }
+  return data as unknown as CommitResult;
+}
+
 export async function finishArticleClaim(input: {
   article: ClaimedArticle; status: "retry-wait" | "failed" | "quarantined"; retryAt: Date | null; errorCode: string; now: Date; database?: SupabaseClient;
 }): Promise<boolean> {

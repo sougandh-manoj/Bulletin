@@ -15,7 +15,7 @@ export default async function ManagePage() {
   const subscriber = authenticated.subscriber;
 
   return (
-    <SecureShell linkHref="/" linkLabel="Finish for now">
+    <SecureShell linkLabel={null}>
       <p className={styles.eyebrow}>Your Bulletin</p>
       <h1 className={styles.title}>Manage briefing.</h1>
       <ManageBriefing

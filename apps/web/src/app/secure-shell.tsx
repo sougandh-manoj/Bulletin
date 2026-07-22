@@ -11,7 +11,7 @@ export function SecureShell({
 }: {
   children: React.ReactNode;
   linkHref?: string;
-  linkLabel?: string;
+  linkLabel?: string | null;
 }) {
   return (
     <div className={styles.shell}>
@@ -19,9 +19,11 @@ export function SecureShell({
         <Link className={styles.masthead} href="/" aria-label={`${PRODUCT.name} home`}>
           {PRODUCT.name}
         </Link>
-        <Link className={styles.headerLink} href={linkHref}>
-          {linkLabel}
-        </Link>
+        {linkLabel && (
+          <Link className={styles.headerLink} href={linkHref}>
+            {linkLabel}
+          </Link>
+        )}
       </header>
       <main className={styles.main}>{children}</main>
       <footer className={styles.footer}>{PRODUCT.promise}</footer>

@@ -137,6 +137,7 @@
 .themeCard:focus-visible,
 .category:focus-within,
 .headerLink:focus-visible,
+.finishLink:focus-visible,
 .textLink:focus-visible {
   outline: 3px solid rgba(49, 95, 145, 0.32);
   outline-offset: 3px;
@@ -1593,6 +1594,17 @@
   margin-top: 34px;
   padding: 26px 0 6px;
   border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.finishLink {
+  color: #315f91;
+  font-size: 14px;
+  font-weight: 700;
+  text-underline-offset: 4px;
 }
 
 .dangerZone h2 {
@@ -1783,6 +1795,10 @@
   .secondaryButton,
   .dangerButton {
     width: 100%;
+  }
+
+  .dangerZone .dangerButton {
+    width: auto;
   }
 }
 

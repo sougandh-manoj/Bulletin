@@ -778,6 +778,9 @@ export default function ManageBriefing({
         </section>
 
         <section className={styles.dangerZone} aria-label="Subscription">
+          <Link className={styles.finishLink} href="/">
+            Finish for now
+          </Link>
           <Link className={`${styles.dangerButton} ${styles.unsubscribeButton}`} href="/manage/delete">
             Unsubscribe
           </Link>

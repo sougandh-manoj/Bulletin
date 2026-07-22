@@ -107,7 +107,7 @@ select cron.schedule(
 );
 select cron.schedule(
   'bulletin-shared-summaries',
-  '*/5 * * * *',
+  '* * * * *',
   $job$select bulletin_private.invoke_vercel_worker('/api/internal/shared-summaries')$job$
 );
 select cron.schedule(

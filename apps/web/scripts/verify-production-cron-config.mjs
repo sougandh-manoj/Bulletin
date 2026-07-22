@@ -7,7 +7,7 @@ const sql = await readFile(fileURLToPath(sqlUrl), "utf8");
 const expected = new Map([
   ["bulletin-ingestion", "*/5 * * * *"],
   ["bulletin-intelligence", "* * * * *"],
-  ["bulletin-shared-summaries", "*/5 * * * *"],
+  ["bulletin-shared-summaries", "* * * * *"],
   ["bulletin-personalization", "* * * * *"],
   ["bulletin-delivery", "* * * * *"],
 ]);

@@ -130,7 +130,7 @@ async function processSummary(input: {
       await input.dependencies.complete({ claim: input.claim, status: "conflicting-evidence", repairAttempted: false, errorCode: "cluster-conflicted", now: input.now() });
       return "conflicting-evidence";
     }
-    if (job.evidence.length === 0 || !["sufficient", "strong"].includes(job.evidenceStrength)) {
+    if (job.evidence.length === 0 || (job.isSensitive && !["sufficient", "strong"].includes(job.evidenceStrength))) {
       await input.dependencies.complete({ claim: input.claim, status: "insufficient-evidence", repairAttempted: false, errorCode: "cluster-insufficient-evidence", now: input.now() });
       return "insufficient-evidence";
     }

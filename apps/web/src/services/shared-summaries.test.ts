@@ -79,11 +79,20 @@ describe("shared summary orchestration", () => {
     expect(ai.generateStructured).toHaveBeenCalledTimes(1);
   });
 
-  it("marks weak or conflicting jobs without any model call", async () => {
+  it("summarizes ordinary weak single-source jobs", async () => {
     load.mockResolvedValue(job({ evidenceStrength: "weak" }));
+    const ai = provider([canonical]);
+    const result = await runSharedSummaryBatch({ provider: ai, quota, now: () => at, dependencies });
+    expect(result.verified).toBe(1);
+    expect(ai.generateStructured).toHaveBeenCalledTimes(1);
+  });
+
+  it("still blocks sensitive weak jobs without any model call", async () => {
+    load.mockResolvedValue(job({ evidenceStrength: "weak", isSensitive: true }));
     const ai = provider([]);
     const result = await runSharedSummaryBatch({ provider: ai, quota, now: () => at, dependencies });
-    expect(result.insufficientEvidence).toBe(1); expect(ai.generateStructured).not.toHaveBeenCalled();
+    expect(result.insufficientEvidence).toBe(1);
+    expect(ai.generateStructured).not.toHaveBeenCalled();
     expect(complete).toHaveBeenCalledWith(expect.objectContaining({ status: "insufficient-evidence" }));
   });
 

@@ -320,7 +320,19 @@ export async function saveSubscriberPreferences(input: {
     p_timezone: p.timezone,
   });
   dataError(error);
-  return Number(data);
+
+  const { data: schedule, error: scheduleError } = await database
+    .from("subscriber_schedules")
+    .select("next_delivery_at")
+    .eq("subscriber_id", input.subscriberId)
+    .single<{ next_delivery_at: string | null }>();
+  dataError(scheduleError);
+  if (!schedule) throw new SubscriberDataError("empty-schedule-result");
+
+  return {
+    version: Number(data),
+    nextDeliveryAt: schedule.next_delivery_at,
+  };
 }
 
 export async function saveSubscriberTheme(input: {

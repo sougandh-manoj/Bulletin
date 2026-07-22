@@ -451,12 +451,18 @@ export default function ManageBriefing({
           },
         }),
       });
-      const result = await response.json() as { ok?: boolean; version?: number; message?: string };
+      const result = await response.json() as {
+        ok?: boolean;
+        version?: number;
+        nextDeliveryAt?: string | null;
+        message?: string;
+      };
       if (!response.ok || !result.ok || !result.version) {
         setError(`${result.message ?? "Changes could not be saved."} No previously saved preference was changed.`);
         return;
       }
       setVersion(result.version);
+      setNextDeliveryAt(result.nextDeliveryAt ?? null);
       setNotice("Changes saved.");
     } catch {
       setError("We couldn’t save your changes. Your previous settings are still in place.");

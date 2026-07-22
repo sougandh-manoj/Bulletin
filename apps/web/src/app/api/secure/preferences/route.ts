@@ -32,13 +32,13 @@ export async function POST(request: Request) {
       return privateJson({ ok: false, message: "Your secure session has expired." }, { status: 401 });
     }
 
-    const version = await saveSubscriberPreferences({
+    const saved = await saveSubscriberPreferences({
       subscriberId: authenticated.subscriber.subscriberId,
       expectedVersion: parsed.data.expectedVersion,
       preferences: parsed.data.preferences,
     });
     logger.info("Subscriber preferences saved atomically");
-    return privateJson({ ok: true, version });
+    return privateJson({ ok: true, ...saved });
   } catch (error) {
     if (error instanceof SyntaxError) return invalidRequest();
     if (isVersionConflict(error)) {

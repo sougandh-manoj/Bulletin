@@ -67,7 +67,10 @@ describe("authenticated Phase 4 mutations", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getAuthenticatedSubscriber.mockResolvedValue(subscriber);
-    mocks.saveSubscriberPreferences.mockResolvedValue(8);
+    mocks.saveSubscriberPreferences.mockResolvedValue({
+      version: 8,
+      nextDeliveryAt: "2026-07-15T15:15:00Z",
+    });
     mocks.saveSubscriberTheme.mockResolvedValue(9);
     mocks.pauseSubscriber.mockResolvedValue(undefined);
     mocks.resumeSubscriber.mockResolvedValue("2026-07-15T02:30:00Z");
@@ -81,7 +84,11 @@ describe("authenticated Phase 4 mutations", () => {
       preferences,
     }));
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ ok: true, version: 8 });
+    expect(await response.json()).toEqual({
+      ok: true,
+      version: 8,
+      nextDeliveryAt: "2026-07-15T15:15:00Z",
+    });
     expect(mocks.saveSubscriberPreferences).toHaveBeenCalledWith({ subscriberId: "subscriber-1", expectedVersion: 7, preferences });
   });
 

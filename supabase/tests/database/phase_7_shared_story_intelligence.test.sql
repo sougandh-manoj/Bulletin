@@ -6,8 +6,8 @@ select plan(67);
 
 update public.system_controls set intelligence_worker_paused = false where singleton;
 
-select is((select count(*)::integer from public.sources where is_active), 48, 'Phase 7 does not activate another source');
-select is((select count(*)::integer from public.sources where not is_active), 47, 'all 47 disabled sources remain disabled');
+select is((select count(*)::integer from public.sources where is_active), 13, 'Phase 7 does not activate another source');
+select is((select count(*)::integer from public.sources where not is_active), 82, 'all 82 disabled sources remain disabled');
 select is((select count(*)::integer from public.sources), 95, 'source catalogue remains unchanged');
 select is((select count(*)::integer from public.sources where publisher_family_key is null), 0, 'every source has a reviewed publisher-family key');
 select is((select count(*)::integer from public.sources where publisher_family_key = 'science-x'), 3, 'Science X publications share one evidence family');

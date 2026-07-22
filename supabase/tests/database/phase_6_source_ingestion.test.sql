@@ -7,17 +7,17 @@ update public.system_controls set ingestion_worker_paused = false where singleto
 
 select is((select count(*)::integer from public.sources where catalogue_key is not null), 95, 'catalogue contains 95 reviewed feeds');
 select is((select count(*)::integer from public.sources where technical_status = 'verified'), 92, '92 feeds passed final technical verification');
-select is((select count(*)::integer from public.sources where is_active), 48, '48 feeds are fail-closed approved and scheduled');
-select is((select count(*)::integer from public.sources where not is_active), 47, '47 reviewed feeds remain visibly disabled');
-select is((select count(*)::integer from public.sources where terms_status = 'approved'), 48, 'only usage-approved feeds are active');
+select is((select count(*)::integer from public.sources where is_active), 13, '13 curated feeds are scheduled for the production soak');
+select is((select count(*)::integer from public.sources where not is_active), 82, '82 reviewed feeds remain preserved but disabled');
+select is((select count(*)::integer from public.sources where terms_status = 'approved'), 48, '48 feeds remain usage-approved in the retained catalogue');
 select is((select count(*)::integer from public.sources where terms_status = 'restricted'), 27, '27 feeds are retained with explicit usage restrictions');
 select is((select count(*)::integer from public.sources where terms_status = 'rejected'), 16, '16 feeds are rejected by current automated-access terms');
 select is((select count(*)::integer from public.sources where terms_status = 'pending'), 4, 'four feeds await permission or technical recovery');
-select is((select count(*)::integer from public.sources where is_active and language = 'ml'), 5, 'active catalogue includes Malayalam coverage');
-select is((select count(*)::integer from public.sources where is_active and language = 'hi'), 7, 'active catalogue includes seven Hindi feeds');
-select is((select count(*)::integer from public.sources where is_active and language = 'en'), 36, 'active catalogue includes 36 English feeds');
-select is((select count(*)::integer from public.sources where is_active and publisher_name = 'NDTV.com'), 12, 'all 12 reviewed NDTV feeds are active');
-select is((select count(*)::integer from public.sources where is_active and publisher_name = 'India Today'), 6, 'all six reviewed India Today feeds are active');
+select is((select count(*)::integer from public.sources where is_active and language = 'ml'), 0, 'Malayalam feeds are retained but disabled during the small-source soak');
+select is((select count(*)::integer from public.sources where is_active and language = 'hi'), 1, 'active catalogue keeps one Hindi institutional feed');
+select is((select count(*)::integer from public.sources where is_active and language = 'en'), 12, 'active catalogue keeps twelve English feeds');
+select is((select count(*)::integer from public.sources where is_active and publisher_name = 'NDTV.com'), 2, 'two reviewed NDTV feeds remain active');
+select is((select count(*)::integer from public.sources where is_active and publisher_name = 'India Today'), 2, 'two reviewed India Today feeds remain active');
 select is(
   (
     select count(*)::integer
@@ -44,28 +44,28 @@ select is(
       and usage_review_url is not null
       and cardinality(allowed_hosts) > 0
   ),
-  9,
-  'all nine specialist feeds are active with technical and usage-review metadata'
+  4,
+  'four specialist feeds remain active with technical and usage-review metadata'
 );
 select is(
   (select count(*)::integer from public.sources where is_active and category_scope @> array['technology-ai']::public.news_category[]),
-  3,
-  'active catalogue has three technology and AI feeds'
+  1,
+  'active catalogue has one technology and AI feed'
 );
 select is(
   (select count(*)::integer from public.sources where is_active and category_scope @> array['science']::public.news_category[]),
-  3,
-  'active catalogue has three science feeds'
+  1,
+  'active catalogue has one science feed'
 );
 select is(
   (select count(*)::integer from public.sources where is_active and category_scope @> array['health']::public.news_category[]),
-  3,
-  'active catalogue has three health feeds'
+  1,
+  'active catalogue has one health feed'
 );
 select is(
   (select count(*)::integer from public.sources where is_active and category_scope @> array['climate']::public.news_category[]),
-  4,
-  'active catalogue has four climate feeds'
+  1,
+  'active catalogue has one climate feed'
 );
 select is(
   (select count(*)::integer from public.sources where catalogue_key in ('nasa-news-releases', 'who-news-english') and is_institutional),

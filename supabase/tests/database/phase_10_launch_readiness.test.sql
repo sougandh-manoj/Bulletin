@@ -15,14 +15,14 @@ select extensions.ok(
 );
 select extensions.is(
   (select count(*)::integer from public.sources where is_active),
-  48,
-  'only the approved active source catalogue is seeded'
+  13,
+  'only the curated active source catalogue is seeded'
 );
 select extensions.ok(
-  (select max(next_fetch_at) - min(next_fetch_at) <= interval '29 minutes'
+  (select max(next_fetch_at) - min(next_fetch_at) <= interval '15 minutes'
       and min(next_fetch_at) is not null
    from public.sources where is_active),
-  'initial active source fetches are bounded and staggered across thirty minutes'
+  'initial active source fetches are bounded and staggered across fifteen minutes'
 );
 
 insert into public.articles (

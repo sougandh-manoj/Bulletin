@@ -116,6 +116,10 @@ export class GroqSummaryProvider implements StorySummaryProvider {
             retryAt,
             response.status,
           );
+          // A 429 already tells us exactly when Groq can accept more work.
+          // Return it to the durable queue instead of spending another request
+          // inside the same worker invocation.
+          if (response.status === 429) throw lastError;
           if (!retryable || attempt === this.maxAttempts) throw lastError;
           const delay = retryAt
             ? Math.max(0, retryAt.getTime() - this.now().getTime())

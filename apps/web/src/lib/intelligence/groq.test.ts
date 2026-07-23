@@ -78,9 +78,18 @@ describe("Groq provider boundary", () => {
     });
   });
 
-  it("retries a transient 429 once but never retries a permanent 400", async () => {
-    const transient = vi.fn()
+  it("defers a rate-limited request without immediately calling Groq again", async () => {
+    const rateLimited = vi.fn()
       .mockResolvedValueOnce(new Response("rate", { status: 429, headers: { "retry-after": "1" } }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ choices: [{ message: { content: "{}" } }] }), { status: 200 }));
+    await expect(provider(rateLimited).generateStructured({ ...structuredRequest, jsonSchema: {} }))
+      .rejects.toMatchObject({ code: "provider-rate-limited", retryable: true });
+    expect(rateLimited).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries other transient failures but never retries a permanent 400", async () => {
+    const transient = vi.fn()
+      .mockResolvedValueOnce(new Response("unavailable", { status: 503 }))
       .mockResolvedValueOnce(new Response(JSON.stringify({ choices: [{ message: { content: "{}" } }] }), { status: 200 }));
     await provider(transient).generateStructured({ ...structuredRequest, jsonSchema: {} });
     expect(transient).toHaveBeenCalledTimes(2);

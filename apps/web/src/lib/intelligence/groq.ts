@@ -150,7 +150,7 @@ export class GroqSummaryProvider implements StorySummaryProvider {
       model: this.generationModel,
       messages: [{ role: "user", content: input.prompt }],
       reasoning_effort: "low",
-      max_completion_tokens: 2_048,
+      max_completion_tokens: 1_000,
       stream: false,
       response_format: {
         type: "json_schema",

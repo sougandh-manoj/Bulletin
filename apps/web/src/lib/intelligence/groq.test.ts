@@ -39,7 +39,7 @@ describe("Groq provider boundary", () => {
     expect(body).toMatchObject({
       model: "openai/gpt-oss-20b",
       reasoning_effort: "low",
-      max_completion_tokens: 2_048,
+      max_completion_tokens: 1_000,
       stream: false,
       response_format: {
         type: "json_schema",

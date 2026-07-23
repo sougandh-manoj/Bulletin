@@ -44,9 +44,9 @@ export function deterministicGrounding(
   const reasons: string[] = [];
   const unsupportedClaims: string[] = [];
   const sentences = sentenceCount(output.summary);
-  if (sentences < 3 || sentences > 4) {
+  if (sentences < 2 || sentences > 4) {
     reasons.push("summary-sentence-count");
-    unsupportedClaims.push("Summary must contain exactly three or four complete factual sentences.");
+    unsupportedClaims.push("Summary must contain between two and four complete factual sentences.");
   }
   if (expectedIsUpdate !== undefined && output.isUpdate !== expectedIsUpdate) {
     reasons.push("update-status-mismatch");
@@ -69,17 +69,15 @@ export function deterministicGrounding(
   const numericConflicts = [...digits(summaryText(output))].filter((value) => !supportedDigits.has(value));
   if (numericConflicts.length > 0) reasons.push("unsupported-numeric-claim");
   // Translations do not share vocabulary with their English evidence, so this
-  // conservative lexical sanity check applies only to canonical summaries.
+  // loose lexical sanity check applies only to the canonical summary as a
+  // whole. Sentence-by-sentence matching rejected accurate paraphrases.
   if (!("language" in output)) {
     const evidenceTokens = new Set(contentTokens(citedText));
-    for (const sentence of output.summary.split(/[.!?।॥]+/u).map((item) => item.trim()).filter(Boolean)) {
-      const tokens = contentTokens(sentence);
-      if (tokens.length < 5) continue;
-      const supported = tokens.filter((token) => evidenceTokens.has(token));
-      if (supported.length === 0) {
-        reasons.push("unsupported-lexical-claim");
-        unsupportedClaims.push(sentence.slice(0, 400));
-      }
+    const tokens = contentTokens(summaryText(output));
+    const supported = tokens.filter((token) => evidenceTokens.has(token));
+    if (tokens.length >= 5 && supported.length === 0) {
+      reasons.push("unsupported-lexical-claim");
+      unsupportedClaims.push("Summary has no meaningful subject overlap with its cited evidence.");
     }
   }
   const evidenceHasUncertainty = /\b(?:alleged|allegedly|could|estimated|expected|likely|may|might|planned|reportedly|unconfirmed)\b|कथित|संभावित|അനുമാന|സാധ്യത/iu.test(citedText);

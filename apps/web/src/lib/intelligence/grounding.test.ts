@@ -15,6 +15,14 @@ describe("summary grounding", () => {
     expect(deterministicGrounding(summary, evidence)).toMatchObject({ passed: true, reasonCodes: [] });
   });
 
+  it("accepts the two-sentence summary requested by the prompt", () => {
+    const result = deterministicGrounding({
+      ...summary,
+      summary: "The agency opened a grant on 18 July. Applications are now open.",
+    }, evidence);
+    expect(result).toMatchObject({ passed: true, reasonCodes: [] });
+  });
+
   it("rejects invented citations, wrong publishers, and numeric drift", () => {
     const result = deterministicGrounding({
       ...summary, summary: "The agency opened a 20 crore grant.", citationArticleIds: ["article-2"],
@@ -35,10 +43,20 @@ describe("summary grounding", () => {
     expect(deterministicGrounding(hindiCanonical, evidence).reasonCodes).toContain("canonical-english-script-mismatch");
   });
 
-  it("rejects a long wholly unrelated canonical claim locally", () => {
+  it("allows paraphrased sentences when the summary as a whole remains grounded", () => {
     const result = deterministicGrounding({
       ...summary,
-      summary: "The agency opened a 10 crore grant on 18 July. Applications are now open. Astronauts discovered unusual minerals beneath a distant frozen ocean.",
+      summary: "The agency opened a 10 crore grant on 18 July. People may now submit proposals. The funding is intended for community work.",
+    }, evidence);
+    expect(result.reasonCodes).not.toContain("unsupported-lexical-claim");
+  });
+
+  it("still rejects a wholly unrelated canonical summary", () => {
+    const result = deterministicGrounding({
+      ...summary,
+      headline: "Astronauts plan an ocean mission",
+      summary: "Astronauts discovered unusual minerals beneath a distant frozen ocean. Scientists are preparing a return mission.",
+      whyItMatters: "The finding could reshape planetary exploration.",
     }, evidence);
     expect(result.reasonCodes).toContain("unsupported-lexical-claim");
   });

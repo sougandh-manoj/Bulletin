@@ -393,7 +393,7 @@ export default function Home() {
               </div>
             </nav>
           </div>
-          <div className={styles.footerBottom} data-reveal>
+          <div className={styles.footerBottom}>
             <p>© 2026 {PRODUCT.name}.</p>
             <p>Designed for a calmer way to stay informed.</p>
           </div>

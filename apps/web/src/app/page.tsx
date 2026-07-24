@@ -114,7 +114,7 @@ export default function Home() {
             <div className={styles.previewWrap} data-reveal-hero aria-label="Illustrative briefing preview">
               <p className={styles.previewLabel}>
                 <span className={styles.mailIcon} aria-hidden="true">✉</span>
-                Illustrative preview · delivered at 8:00 AM
+                Illustrative preview
               </p>
               <div className={styles.previewStack}>
                 <article className={styles.briefingCard}>

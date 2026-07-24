@@ -3,6 +3,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 
 import {
+  applyNewsRetention,
   claimDueSources,
   completeSourceIngestion,
   IngestionDataError,
@@ -46,6 +47,7 @@ type IngestionDependencies = {
     source: { feedUrl: string; allowedHosts: string[]; etag: string | null; lastModified: string | null },
     options: { timeoutMs: number; maxBytes: number; now: () => Date },
   ) => Promise<FeedFetchResult>;
+  cleanup: typeof applyNewsRetention;
 };
 
 const defaultDependencies: IngestionDependencies = {
@@ -55,6 +57,7 @@ const defaultDependencies: IngestionDependencies = {
   insert: insertIngestedArticles,
   heartbeat: recordIngestionHeartbeat,
   fetch: (source, options) => fetchFeed(source, options),
+  cleanup: applyNewsRetention,
 };
 
 export type IngestionBatchResult = {
@@ -323,6 +326,11 @@ export async function runIngestionBatch(options: {
 
   await dependencies.heartbeat({ state: "started", at: now() });
   try {
+    await dependencies.cleanup({ now: now(), batchSize: 1000 }).catch((error) => {
+      logger.warn("News retention cleanup failed without blocking ingestion", {
+        errorCode: error instanceof IngestionDataError ? error.code : "retention-cleanup-failed",
+      });
+    });
     const sources = await dependencies.claim({
       workerId,
       batchSize: options.batchSize ?? 4,

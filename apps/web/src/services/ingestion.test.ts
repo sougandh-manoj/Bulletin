@@ -35,6 +35,7 @@ describe("isolated ingestion orchestration", () => {
   const insert = vi.fn();
   const heartbeat = vi.fn();
   const fetch = vi.fn();
+  const cleanup = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -42,6 +43,7 @@ describe("isolated ingestion orchestration", () => {
     candidates.mockResolvedValue([]);
     insert.mockResolvedValue({ inserted: 1, exactDuplicates: 0, nearDuplicates: 0 });
     heartbeat.mockResolvedValue(undefined);
+    cleanup.mockResolvedValue({});
   });
 
   it("isolates a malformed source and continues with the next claimed feed", async () => {
@@ -67,7 +69,7 @@ describe("isolated ingestion orchestration", () => {
     const result = await runIngestionBatch({
       workerId: "worker-1",
       now: () => now,
-      dependencies: { claim, complete, candidates, insert, heartbeat, fetch },
+      dependencies: { claim, complete, candidates, insert, heartbeat, fetch, cleanup },
     });
 
     expect(result).toMatchObject({
@@ -83,6 +85,7 @@ describe("isolated ingestion orchestration", () => {
     expect(complete).toHaveBeenCalledWith(expect.objectContaining({ sourceId: "good", outcome: "success", articleCount: 1 }));
     expect(heartbeat).toHaveBeenNthCalledWith(1, { state: "started", at: now });
     expect(heartbeat).toHaveBeenLastCalledWith({ state: "completed", at: now, batchSize: 2 });
+    expect(cleanup).toHaveBeenCalledWith({ now, batchSize: 1000 });
   });
 
   it("completes conditional 304 responses as healthy without parsing or inserting", async () => {
@@ -97,7 +100,7 @@ describe("isolated ingestion orchestration", () => {
     });
     const result = await runIngestionBatch({
       now: () => now,
-      dependencies: { claim, complete, candidates, insert, heartbeat, fetch },
+      dependencies: { claim, complete, candidates, insert, heartbeat, fetch, cleanup },
     });
     expect(result).toMatchObject({ claimed: 1, notModified: 1, succeeded: 0, failed: 0 });
     expect(candidates).not.toHaveBeenCalled();
@@ -118,7 +121,7 @@ describe("isolated ingestion orchestration", () => {
     ));
     const result = await runIngestionBatch({
       now: () => now,
-      dependencies: { claim, complete, candidates, insert, heartbeat, fetch },
+      dependencies: { claim, complete, candidates, insert, heartbeat, fetch, cleanup },
     });
     expect(result.failed).toBe(1);
     expect(complete).toHaveBeenCalledWith(expect.objectContaining({
@@ -153,7 +156,7 @@ describe("isolated ingestion orchestration", () => {
 
     const result = await runIngestionBatch({
       now: () => now,
-      dependencies: { claim, complete, candidates, insert, heartbeat, fetch },
+      dependencies: { claim, complete, candidates, insert, heartbeat, fetch, cleanup },
     });
     expect(result).toMatchObject({
       parsedEntries: 3,
@@ -163,5 +166,15 @@ describe("isolated ingestion orchestration", () => {
     });
     expect(insert.mock.calls[0]?.[0].articles).toHaveLength(2);
   });
-});
 
+  it("does not block fresh ingestion when bounded retention cleanup fails", async () => {
+    cleanup.mockRejectedValue(new Error("cleanup unavailable"));
+    claim.mockResolvedValue([]);
+    const result = await runIngestionBatch({
+      now: () => now,
+      dependencies: { claim, complete, candidates, insert, heartbeat, fetch, cleanup },
+    });
+    expect(result.claimed).toBe(0);
+    expect(heartbeat).toHaveBeenLastCalledWith({ state: "completed", at: now, batchSize: 0 });
+  });
+});

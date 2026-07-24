@@ -251,3 +251,17 @@ export async function recordIngestionHeartbeat(input: {
   const { error } = await database.from("worker_heartbeats").upsert(values, { onConflict: "worker_name" });
   dataError(error);
 }
+
+export async function applyNewsRetention(input: {
+  now: Date;
+  batchSize?: number;
+  database?: SupabaseClient;
+}) {
+  const database = input.database ?? getTrustedSupabase();
+  const { data, error } = await database.rpc("apply_news_retention", {
+    p_now: input.now.toISOString(),
+    p_batch_size: input.batchSize ?? 1000,
+  });
+  dataError(error);
+  return data;
+}

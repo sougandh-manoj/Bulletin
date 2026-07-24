@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions, pg_catalog;
-select plan(38);
+select plan(46);
 
 update public.system_controls set
   email_delivery_enabled = true,
@@ -107,6 +107,14 @@ select is((select count(*)::integer from public.validate_admin_session(digest('s
 select ok(public.record_operational_alert('phase9-test','critical','Test alert','{}','2026-07-24 00:00+00'),'first critical alert requests one notification');
 select ok(not public.record_operational_alert('phase9-test','critical','Test alert','{}','2026-07-24 00:05+00'),'duplicate critical alert inside cooldown does not create alert fatigue');
 select is((select occurrence_count from public.alert_events where deduplication_key='phase9-test'),2,'deduplicated alert retains occurrence count');
+select ok(not public.record_consecutive_operational_alert('phase9-consecutive',3,'Consecutive alert','{"stage":"claim-deliveries","errorCode":"database-error"}','2026-07-24 00:00+00'),'first consecutive failure remains a warning');
+select ok(not public.record_consecutive_operational_alert('phase9-consecutive',3,'Consecutive alert','{"stage":"claim-deliveries","errorCode":"database-error"}','2026-07-24 00:01+00'),'second consecutive failure remains a warning');
+select ok(public.record_consecutive_operational_alert('phase9-consecutive',3,'Consecutive alert','{"stage":"claim-deliveries","errorCode":"database-error"}','2026-07-24 00:02+00'),'third consecutive failure escalates and requests notification');
+select is((select severity::text||':'||occurrence_count from public.alert_events where deduplication_key='phase9-consecutive'),'critical:3','consecutive alert records the escalation threshold');
+select ok(public.resolve_operational_alert('phase9-consecutive','2026-07-24 00:03+00'),'successful worker run resolves the open alert');
+select is((select status::text from public.alert_events where deduplication_key='phase9-consecutive'),'resolved','resolved alert is no longer shown as open');
+select ok(not public.record_consecutive_operational_alert('phase9-consecutive',3,'Consecutive alert','{"stage":"heartbeat-start","errorCode":"database-error"}','2026-07-24 00:04+00'),'failure after recovery starts a new consecutive sequence');
+select is((select severity::text||':'||occurrence_count from public.alert_events where deduplication_key='phase9-consecutive'),'warning:1','reopened alert resets its consecutive failure count');
 
 select * from finish();
 rollback;

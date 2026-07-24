@@ -39,7 +39,7 @@ describe("Phase 9 delivery worker", () => {
   const dependencies = {
     recover: vi.fn(), claim: vi.fn(), load: vi.fn(), markRendered: vi.fn(),
     beginSend: vi.fn(), send: vi.fn(), complete: vi.fn(), fail: vi.fn(),
-    heartbeat: vi.fn(), alert: vi.fn(),
+    heartbeat: vi.fn(), alert: vi.fn(), resolveAlert: vi.fn(),
   };
   beforeEach(() => {
     vi.clearAllMocks();
@@ -53,6 +53,7 @@ describe("Phase 9 delivery worker", () => {
     dependencies.fail.mockResolvedValue(true);
     dependencies.heartbeat.mockResolvedValue(undefined);
     dependencies.alert.mockResolvedValue(false);
+    dependencies.resolveAlert.mockResolvedValue(false);
   });
 
   it("renders the exact stored order, gates last before SMTP, and records success once", async () => {
@@ -65,6 +66,10 @@ describe("Phase 9 delivery worker", () => {
     expect(calls).toEqual(["rendered", "gate", "smtp", "complete"]);
     expect(result.sent).toBe(1);
     expect(dependencies.fail).not.toHaveBeenCalled();
+    expect(dependencies.resolveAlert).toHaveBeenCalledWith({
+      key: "delivery-worker-batch-failure",
+      now: new Date("2026-07-12T02:31:00Z"),
+    });
   });
 
   it.each([
@@ -98,6 +103,27 @@ describe("Phase 9 delivery worker", () => {
     expect(result.ambiguous).toBe(1);
     expect(dependencies.fail).not.toHaveBeenCalled();
     expect(dependencies.alert).toHaveBeenCalledWith(expect.objectContaining({ severity: "critical" }));
+  });
+
+  it("records a safe staged batch failure and escalates after three consecutive failures", async () => {
+    dependencies.claim.mockRejectedValue(new Error("private database message"));
+    await expect(runDeliveryBatch({
+      dependencies,
+      now: () => new Date("2026-07-12T02:31:00Z"),
+    })).rejects.toThrow("private database message");
+    expect(dependencies.alert).toHaveBeenCalledWith({
+      key: "delivery-worker-batch-failure",
+      severity: "critical",
+      title: "The briefing delivery worker failed",
+      details: {
+        errorType: "Error",
+        errorCode: "delivery-batch-failed",
+        stage: "claim-deliveries",
+      },
+      consecutiveFailuresBeforeCritical: 3,
+      now: new Date("2026-07-12T02:31:00Z"),
+    });
+    expect(dependencies.resolveAlert).not.toHaveBeenCalled();
   });
 
   it("contains no AI or provider dependency", () => {

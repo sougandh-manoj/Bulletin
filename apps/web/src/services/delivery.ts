@@ -12,6 +12,7 @@ import {
   markDeliveryRendered,
   recordDeliveryAlert,
   recordDeliveryHeartbeat,
+  resolveDeliveryAlert,
   recoverExpiredDeliveryLeases,
   type DeliveryClaim,
   type DeliveryRenderContext,
@@ -44,6 +45,7 @@ type DeliveryDependencies = {
   fail: typeof failDelivery;
   heartbeat: typeof recordDeliveryHeartbeat;
   alert: typeof recordDeliveryAlert;
+  resolveAlert: typeof resolveDeliveryAlert;
 };
 
 const defaultDependencies: DeliveryDependencies = {
@@ -57,6 +59,7 @@ const defaultDependencies: DeliveryDependencies = {
   fail: failDelivery,
   heartbeat: recordDeliveryHeartbeat,
   alert: recordAndNotifyOperationalAlert,
+  resolveAlert: resolveDeliveryAlert,
 };
 
 export type DeliveryBatchResult = {
@@ -278,11 +281,14 @@ export async function runDeliveryBatch(options?: {
     gated: 0,
     ambiguous: 0,
   };
-  await dependencies.heartbeat({ state: "started", at: now() });
+  let stage = "heartbeat-start";
   try {
+    await dependencies.heartbeat({ state: "started", at: now() });
+    stage = "recover-expired-leases";
     const recovered = await dependencies.recover({ now: now() });
     result.recovered = recovered.retryable;
     result.ambiguousRecovered = recovered.ambiguous;
+    stage = "claim-deliveries";
     const claims = await dependencies.claim({
       workerId,
       batchSize: options?.batchSize ?? 10,
@@ -290,23 +296,39 @@ export async function runDeliveryBatch(options?: {
       now: now(),
     });
     result.claimed = claims.length;
+    stage = "process-deliveries";
     for (const claim of claims) {
       const outcome = await processClaim({ claim, dependencies, now });
       result[outcome] += 1;
     }
+    stage = "heartbeat-complete";
     await dependencies.heartbeat({ state: "completed", at: now(), batchSize: claims.length });
+    await dependencies.resolveAlert({
+      key: "delivery-worker-batch-failure",
+      now: now(),
+    }).catch((error) => {
+      logger.warn("Recovered delivery alert could not be resolved", {
+        errorCode: error instanceof DeliveryDataError ? error.code : "alert-resolution-failed",
+      });
+    });
     return result;
   } catch (error) {
+    const errorCode = error instanceof DeliveryDataError ? error.code : "delivery-batch-failed";
     await dependencies.heartbeat({
       state: "failed",
       at: now(),
-      errorCode: error instanceof DeliveryDataError ? error.code : "delivery-batch-failed",
+      errorCode,
     }).catch(() => undefined);
     await dependencies.alert({
       key: "delivery-worker-batch-failure",
       severity: "critical",
       title: "The briefing delivery worker failed",
-      details: { errorType: error instanceof Error ? error.name : "unknown" },
+      details: {
+        errorType: error instanceof Error ? error.name : "unknown",
+        errorCode,
+        stage,
+      },
+      consecutiveFailuresBeforeCritical: 3,
       now: now(),
     }).catch(() => undefined);
     throw error;

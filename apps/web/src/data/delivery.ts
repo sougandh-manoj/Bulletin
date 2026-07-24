@@ -214,14 +214,37 @@ export async function recordDeliveryAlert(input: {
   title: string;
   details: Record<string, unknown>;
   now: Date;
+  consecutiveFailuresBeforeCritical?: number;
   database?: SupabaseClient;
 }) {
   const database = input.database ?? getTrustedSupabase();
-  const { data, error } = await database.rpc("record_operational_alert", {
+  const { data, error } = input.consecutiveFailuresBeforeCritical
+    ? await database.rpc("record_consecutive_operational_alert", {
+        p_deduplication_key: input.key,
+        p_critical_after: input.consecutiveFailuresBeforeCritical,
+        p_title: input.title,
+        p_safe_details: input.details,
+        p_now: input.now.toISOString(),
+      })
+    : await database.rpc("record_operational_alert", {
+        p_deduplication_key: input.key,
+        p_severity: input.severity,
+        p_title: input.title,
+        p_safe_details: input.details,
+        p_now: input.now.toISOString(),
+      });
+  dataError(error);
+  return Boolean(data);
+}
+
+export async function resolveDeliveryAlert(input: {
+  key: string;
+  now: Date;
+  database?: SupabaseClient;
+}) {
+  const database = input.database ?? getTrustedSupabase();
+  const { data, error } = await database.rpc("resolve_operational_alert", {
     p_deduplication_key: input.key,
-    p_severity: input.severity,
-    p_title: input.title,
-    p_safe_details: input.details,
     p_now: input.now.toISOString(),
   });
   dataError(error);

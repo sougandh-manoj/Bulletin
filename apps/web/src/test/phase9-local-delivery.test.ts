@@ -44,12 +44,12 @@ describe.skipIf(!localOnly)("Phase 9 local non-sending delivery integration", ()
         return { messageId: "phase9-non-sending-receipt" };
       });
       const now = () => new Date("2026-07-20T02:31:00Z");
-      const first = await runDeliveryBatch({ workerId: randomUUID(), batchSize: 10, leaseSeconds: 300, now, dependencies: { send, heartbeat: async () => undefined, alert: async () => false } });
+      const first = await runDeliveryBatch({ workerId: randomUUID(), batchSize: 10, leaseSeconds: 300, now, dependencies: { send, heartbeat: async () => undefined, alert: async () => false, resolveAlert: async () => false } });
       expect(first).toMatchObject({ claimed: 1, sent: 1, retrying: 0, failed: 0 });
       expect(send).toHaveBeenCalledOnce();
       const { data: delivery } = await database.from("deliveries").select("status,smtp_message_id,sent_at").eq("id", deliveryId).single();
       expect(delivery).toMatchObject({ status: "sent", smtp_message_id: "phase9-non-sending-receipt" });
-      const retry = await runDeliveryBatch({ workerId: randomUUID(), batchSize: 10, leaseSeconds: 300, now, dependencies: { send, heartbeat: async () => undefined, alert: async () => false } });
+      const retry = await runDeliveryBatch({ workerId: randomUUID(), batchSize: 10, leaseSeconds: 300, now, dependencies: { send, heartbeat: async () => undefined, alert: async () => false, resolveAlert: async () => false } });
       expect(retry.claimed).toBe(0);
       expect(send).toHaveBeenCalledOnce();
     } finally {

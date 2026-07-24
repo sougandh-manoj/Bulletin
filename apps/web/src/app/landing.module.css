@@ -1237,6 +1237,7 @@
 
   .steps {
     grid-template-columns: 1fr;
+    margin-left: 20px;
   }
 
   .steps li,

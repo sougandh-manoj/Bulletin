@@ -168,6 +168,22 @@ describe("Phase 8 deterministic personalization rules", () => {
     }
   });
 
+  it("supports six requested stories from every selected category", () => {
+    const categories: NewsCategory[] = ["india", "sports"];
+    const sixPerCategory = { ...context, categories, storyCount: 12 };
+    const inventory = categories.flatMap((category) =>
+      Array.from({ length: 6 }, (_, index) => candidate({
+        category,
+        centralTopics: [`${category}-${index}`],
+      })),
+    );
+    const decision = personalize(sixPerCategory, inventory);
+    expect(decision.selected).toHaveLength(12);
+    for (const category of categories) {
+      expect(decision.selected.filter((item) => item.category === category)).toHaveLength(6);
+    }
+  });
+
   it("relaxes category diversity for a subscriber who selected one category", () => {
     const singleCategoryContext = {
       ...context,

@@ -19,6 +19,7 @@ import {
   NEWS_CATEGORIES,
   NEWS_CATEGORY_LABELS,
   PRODUCT,
+  perCategoryStoryCount,
   storyCountRange,
   SUPPORTED_LANGUAGES,
   WEEKDAY_LABELS,
@@ -967,11 +968,20 @@ export default function OnboardingFlow() {
       );
       return;
     }
+    const storiesPerCategory = perCategoryStoryCount(
+      draft.storyCount,
+      draft.categories.length,
+    );
     const categories = selected
       ? draft.categories.filter((item) => item !== category)
       : [...draft.categories, category];
     updateDraft("categories", categories);
-    updateDraft("storyCount", storyCountRange(categories.length).min);
+    updateDraft(
+      "storyCount",
+      categories.length === 0
+        ? PRODUCT.defaultStoryCount
+        : categories.length * storiesPerCategory,
+    );
   };
 
   const selectedCountry = countries.find(
@@ -1418,13 +1428,17 @@ export default function OnboardingFlow() {
                     <div className={styles.storyControl}>
                       <div>
                         <label htmlFor="story-count">Stories in each briefing</label>
-                        <p>4 stories from every selected category · {draft.storyCount} total.</p>
+                        <p>{perCategoryStoryCount(draft.storyCount, draft.categories.length)} stories from every selected category · {draft.storyCount} total.</p>
                       </div>
                       <div className={styles.stepper}>
                         <button
                           type="button"
                           aria-label="Decrease story count"
-                          disabled
+                          disabled={draft.storyCount <= storyCountRange(draft.categories.length).min}
+                          onClick={() => updateDraft(
+                            "storyCount",
+                            draft.storyCount - Math.max(1, draft.categories.length),
+                          )}
                         >
                           −
                         </button>
@@ -1432,9 +1446,9 @@ export default function OnboardingFlow() {
                           id="story-count"
                           type="number"
                           inputMode="numeric"
-                          min={4}
-                          max={4}
-                          value={4}
+                          min={PRODUCT.limits.stories.perCategoryMin}
+                          max={PRODUCT.limits.stories.perCategoryMax}
+                          value={perCategoryStoryCount(draft.storyCount, draft.categories.length)}
                           readOnly
                           aria-invalid={Boolean(errors.storyCount)}
                           aria-describedby={`story-helper ${errors.storyCount ? "story-count-error" : ""}`}
@@ -1442,13 +1456,17 @@ export default function OnboardingFlow() {
                         <button
                           type="button"
                           aria-label="Increase story count"
-                          disabled
+                          disabled={draft.storyCount >= storyCountRange(draft.categories.length).max}
+                          onClick={() => updateDraft(
+                            "storyCount",
+                            draft.storyCount + Math.max(1, draft.categories.length),
+                          )}
                         >
                           +
                         </button>
                       </div>
                       <p className={styles.srOnly} id="story-helper">
-                        Four stories will be selected from every selected category.
+                        Choose between two and six stories from every selected category.
                       </p>
                       <InlineError id="story-count-error" message={errors.storyCount} />
                     </div>

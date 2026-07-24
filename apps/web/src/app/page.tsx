@@ -277,12 +277,12 @@ export default function Home() {
                 <p className={styles.eyebrow}>Your routine</p>
                 <h2 id="schedule-title">Delivered when you choose to read.</h2>
                 <p>
-                  Get four stories from every selected category, in English, Hindi, or Malayalam, at the
+                  Choose two to six stories from every selected category, in English, Hindi, or Malayalam, at the
                   exact local delivery time that fits your day.
                 </p>
               </div>
               <dl className={styles.scheduleBoard} data-reveal-item>
-                <div><dt>Coverage</dt><dd>3–4 per category</dd></div>
+                <div><dt>Coverage</dt><dd>2–6 per category</dd></div>
                 <div><dt>Language</dt><dd>English</dd></div>
                 <div><dt>Frequency</dt><dd>Weekdays</dd></div>
                 <div className={styles.highlightSchedule}><dt>Delivery time</dt><dd>8:00 AM</dd></div>

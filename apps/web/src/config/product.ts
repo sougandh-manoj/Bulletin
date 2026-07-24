@@ -152,7 +152,7 @@ export const PRODUCT = {
     categories: { min: 1, max: 8 },
     customTopics: 5,
     excludedTopics: 5,
-    stories: { min: 4, max: 32, perCategoryMin: 4, perCategoryMax: 4 },
+    stories: { min: 2, max: 48, perCategoryMin: 2, perCategoryMax: 6 },
   },
   consentVersion: "2026-07-12",
 } as const;
@@ -163,6 +163,14 @@ export function storyCountRange(categoryCount: number) {
     min: Math.min(PRODUCT.limits.stories.max, count * PRODUCT.limits.stories.perCategoryMin),
     max: Math.min(PRODUCT.limits.stories.max, count * PRODUCT.limits.stories.perCategoryMax),
   };
+}
+
+export function perCategoryStoryCount(storyCount: number, categoryCount: number) {
+  if (categoryCount < 1) return PRODUCT.defaultStoryCount;
+  return Math.max(
+    PRODUCT.limits.stories.perCategoryMin,
+    Math.min(PRODUCT.limits.stories.perCategoryMax, Math.round(storyCount / categoryCount)),
+  );
 }
 
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];

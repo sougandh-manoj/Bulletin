@@ -83,8 +83,8 @@ export const subscriberPreferencesBaseSchema = z.object({
     storyCount: z
       .number()
       .int()
-      .min(PRODUCT.limits.stories.min, "Choose at least four stories.")
-      .max(PRODUCT.limits.stories.max, "Choose no more than 32 stories."),
+      .min(PRODUCT.limits.stories.min, "Choose at least two stories.")
+      .max(PRODUCT.limits.stories.max, "Choose no more than 48 stories."),
     frequency: z.enum(DELIVERY_FREQUENCIES),
     weeklyDay: z.enum(WEEKDAYS).optional(),
     deliveryTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, {
@@ -102,7 +102,13 @@ export const subscriberPreferencesSchema = subscriberPreferencesBaseSchema
       context.addIssue({
         code: "custom",
         path: ["storyCount"],
-        message: `Choose ${storyRange.min} stories so every selected category gets four.`,
+        message: `Choose a total that gives every selected category between two and six stories.`,
+      });
+    } else if (preferences.storyCount % preferences.categories.length !== 0) {
+      context.addIssue({
+        code: "custom",
+        path: ["storyCount"],
+        message: "Choose the same number of stories for every selected category.",
       });
     }
     if (
@@ -190,7 +196,13 @@ export const managedPreferencesSchema = subscriberPreferencesBaseSchema
       context.addIssue({
         code: "custom",
         path: ["storyCount"],
-        message: `Choose ${storyRange.min} stories so every selected category gets four.`,
+        message: `Choose a total that gives every selected category between two and six stories.`,
+      });
+    } else if (preferences.storyCount % preferences.categories.length !== 0) {
+      context.addIssue({
+        code: "custom",
+        path: ["storyCount"],
+        message: "Choose the same number of stories for every selected category.",
       });
     }
     if (

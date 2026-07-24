@@ -77,7 +77,7 @@ export type DeliveryBatchResult = {
 function assertSafeContext(context: DeliveryRenderContext) {
   if (!Number.isInteger(context.actualStoryCount)
       || context.actualStoryCount < 0
-      || context.actualStoryCount > 32
+      || context.actualStoryCount > 48
       || context.stories.length !== context.actualStoryCount) {
     throw new DeliveryDataError("delivery-story-count-mismatch");
   }

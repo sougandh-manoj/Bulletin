@@ -64,6 +64,13 @@ describe("subscriber preference validation", () => {
 
     expect(result.success).toBe(false);
   });
+
+  it("accepts two through six stories per category and rejects uneven totals", () => {
+    expect(subscriberPreferencesSchema.safeParse({ ...validPreferences, storyCount: 4 }).success).toBe(true);
+    expect(subscriberPreferencesSchema.safeParse({ ...validPreferences, storyCount: 12 }).success).toBe(true);
+    expect(subscriberPreferencesSchema.safeParse({ ...validPreferences, storyCount: 2 }).success).toBe(false);
+    expect(subscriberPreferencesSchema.safeParse({ ...validPreferences, storyCount: 14 }).success).toBe(false);
+  });
 });
 
 describe("managed preference validation", () => {
@@ -91,5 +98,11 @@ describe("managed preference validation", () => {
   it("keeps weekly-day and category boundaries server-enforced", () => {
     expect(managedPreferencesSchema.safeParse({ ...managed, frequency: "weekly" }).success).toBe(false);
     expect(managedPreferencesSchema.safeParse({ ...managed, categories: [] }).success).toBe(false);
+  });
+
+  it("accepts the per-category minimum and maximum", () => {
+    expect(managedPreferencesSchema.safeParse({ ...managed, storyCount: 2 }).success).toBe(true);
+    expect(managedPreferencesSchema.safeParse({ ...managed, storyCount: 6 }).success).toBe(true);
+    expect(managedPreferencesSchema.safeParse({ ...managed, storyCount: 7 }).success).toBe(false);
   });
 });

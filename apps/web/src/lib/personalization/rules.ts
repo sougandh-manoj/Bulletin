@@ -246,11 +246,16 @@ function rerankForDiversity(
   const selected: ScoredCandidate[] = [];
   const categoryCounts = new Map<NewsCategory, number>();
   const subjectCounts = new Map<string, number>();
-  const targetCount = Math.max(context.storyCount, context.categories.length * 4);
+  const targetCount = context.storyCount;
+  const coverageRounds = Math.max(
+    1,
+    Math.floor(context.storyCount / Math.max(1, context.categories.length)),
+  );
 
   // Coverage comes before global score: take the best available story from
-  // every selected category four times, then use score and diversity for the rest.
-  for (let round = 0; round < 4 && selected.length < targetCount; round += 1) {
+  // every selected category for the requested rounds, then use score and
+  // diversity only when a category does not have enough fresh stories.
+  for (let round = 0; round < coverageRounds && selected.length < targetCount; round += 1) {
     for (const category of context.categories) {
       if (selected.length >= targetCount) break;
       const choices = remaining

@@ -21,6 +21,7 @@ import {
   NEWS_CATEGORIES,
   NEWS_CATEGORY_LABELS,
   PRODUCT,
+  perCategoryStoryCount,
   storyCountRange,
   SUPPORTED_LANGUAGES,
   WEEKDAY_LABELS,
@@ -413,11 +414,20 @@ export default function ManageBriefing({
       setError("Choose no more than eight categories.");
       return;
     }
+    const storiesPerCategory = perCategoryStoryCount(
+      draft.storyCount,
+      draft.categories.length,
+    );
     const categories = selected
       ? draft.categories.filter((item) => item !== category)
       : [...draft.categories, category];
     update("categories", categories);
-    update("storyCount", storyCountRange(categories.length).min);
+    update(
+      "storyCount",
+      categories.length === 0
+        ? PRODUCT.defaultStoryCount
+        : categories.length * storiesPerCategory,
+    );
   };
 
   const save = async (event: FormEvent) => {
@@ -680,27 +690,35 @@ export default function ManageBriefing({
           <div className={styles.manageStoryControl}>
             <div>
               <label htmlFor="manage-count">Stories in each briefing</label>
-              <p>4 stories from every selected category · {draft.storyCount} total.</p>
+              <p>{perCategoryStoryCount(draft.storyCount, draft.categories.length)} stories from every selected category · {draft.storyCount} total.</p>
             </div>
             <div className={styles.manageStepper}>
               <button
                 type="button"
                 aria-label="Decrease story count"
-                disabled
+                disabled={draft.storyCount <= storyCountRange(draft.categories.length).min}
+                onClick={() => update(
+                  "storyCount",
+                  draft.storyCount - Math.max(1, draft.categories.length),
+                )}
               >−</button>
               <input
                 id="manage-count"
                 type="number"
                 inputMode="numeric"
-                min={4}
-                max={4}
-                value={4}
+                min={PRODUCT.limits.stories.perCategoryMin}
+                max={PRODUCT.limits.stories.perCategoryMax}
+                value={perCategoryStoryCount(draft.storyCount, draft.categories.length)}
                 readOnly
               />
               <button
                 type="button"
                 aria-label="Increase story count"
-                disabled
+                disabled={draft.storyCount >= storyCountRange(draft.categories.length).max}
+                onClick={() => update(
+                  "storyCount",
+                  draft.storyCount + Math.max(1, draft.categories.length),
+                )}
               >+</button>
             </div>
           </div>

@@ -87,7 +87,7 @@ export function ThemePreview({
           {signal || midnight || amber ? "Personal intelligence brief" : "Your morning briefing"}
         </span>
         <span className={styles.previewGreeting}>
-          {midnight ? "Good evening, Ananya." : signal || amber ? "Morning, Ananya." : "Good morning, Ananya."}
+          {midnight ? "Good evening, Shradha." : signal || amber ? "Morning, Shradha." : "Good morning, Shradha."}
         </span>
         <span className={styles.previewDeck}>
           {amber

@@ -82,11 +82,7 @@ export default function Home() {
   return (
     <div className={styles.page} data-scroll-reveal-root>
       <LandingScrollReveal />
-
-      <a className={styles.skipLink} href="#main-content">
-        Skip to content
-      </a>
-
+      
       <LandingNavigation />
 
       <main id="main-content">

@@ -1199,12 +1199,12 @@ export default function OnboardingFlow() {
                           <strong>
                             {emailState === "existing"
                               ? "An existing Bulletin was found for this email."
-                              : "Your choices are already saved."}
+                              : "You’re already signed up."}
                           </strong>
                           <p>
                             {emailState === "existing"
                               ? "Your private preferences were not shown or changed. A fresh secure management email has been sent."
-                              : "The saved pending choices were not overwritten. Older verification links were invalidated and a fresh email was sent."}
+                              : "Continue with the newest confirmation link we sent to your email."}
                           </p>
                           <small>Use only the newest email. Links are short-lived.</small>
                         </div>

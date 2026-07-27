@@ -6,6 +6,8 @@ import {
   PRODUCT,
   SUPPORTED_LANGUAGES,
   WEEKDAYS,
+  BRIEFING_THEMES,
+  type BriefingTheme,
   type DeliveryFrequency,
   type NewsCategory,
   type SupportedLanguage,
@@ -34,7 +36,7 @@ export type OnboardingDraft = {
   weeklyDay?: Weekday;
   deliveryTime: string;
   timezone: string;
-  theme: typeof PRODUCT.defaultTheme;
+  theme: BriefingTheme;
   consent: boolean;
 };
 
@@ -58,7 +60,7 @@ const storedDraftSchema = z.object({
     weeklyDay: z.enum(WEEKDAYS).optional(),
     deliveryTime: z.string(),
     timezone: z.string(),
-    theme: z.literal("light-editorial"),
+    theme: z.enum(BRIEFING_THEMES),
     consent: z.boolean(),
   }),
 });
@@ -120,7 +122,7 @@ export function validateStep(step: number, draft: OnboardingDraft): FieldErrors 
       weeklyDay: draft.weeklyDay,
       deliveryTime: draft.deliveryTime,
     },
-    5: { consent: draft.consent },
+    5: { theme: draft.theme, consent: draft.consent },
   } as const;
 
   const schemas = {

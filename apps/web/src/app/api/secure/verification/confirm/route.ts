@@ -4,8 +4,9 @@ import { z } from "zod";
 import {
   consumeVerificationToken,
   findSubscriberForManagement,
+  inspectVerificationToken,
+  loadSubscriberThemeForVerification,
 } from "@/data/subscribers";
-import { BRIEFING_THEMES } from "@/config/product";
 import { getSecureAccessEnvironment } from "@/env/server";
 import { createLogger } from "@/lib/logging/logger";
 import { invalidRequest, privateJson, rateLimited, unavailable } from "@/lib/security/api";
@@ -26,7 +27,6 @@ export const runtime = "nodejs";
 const logger = createLogger("verification-confirm");
 const confirmationSchema = z.object({
   intent: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
-  theme: z.enum(BRIEFING_THEMES),
 });
 
 export async function POST(request: Request) {
@@ -56,10 +56,14 @@ export async function POST(request: Request) {
     });
     if (!allowed) return rateLimited();
 
-    const consumed = await consumeVerificationToken(
-      toPostgresBytea(hashValue(verification.sessionToken)),
-      parsedBody.data.theme,
-    );
+    const tokenHash = toPostgresBytea(hashValue(verification.sessionToken));
+    const inspection = await inspectVerificationToken(tokenHash);
+    const theme = inspection?.subscriber_public_reference
+      ? await loadSubscriberThemeForVerification(inspection.subscriber_public_reference)
+      : null;
+    if (!theme) return unavailable();
+
+    const consumed = await consumeVerificationToken(tokenHash, theme);
     const subscriber = await findSubscriberForManagement(
       consumed.subscriber_public_reference,
     );
@@ -81,7 +85,7 @@ export async function POST(request: Request) {
     return privateJson({
       ok: true,
       nextDeliveryAt: consumed.next_delivery_at,
-      theme: parsedBody.data.theme,
+      theme,
     });
   } catch (error) {
     logger.warn("Verification confirmation rejected", { error });

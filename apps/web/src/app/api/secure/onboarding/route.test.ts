@@ -31,7 +31,7 @@ const payload = {
   customTopics: ["space policy"],
   excludedTopics: ["celebrity gossip"],
   storyCount: 8,
-  theme: "light-editorial",
+  theme: "amber-brief",
   frequency: "daily",
   deliveryTime: "08:00",
   timezone: "Asia/Kolkata",
@@ -60,6 +60,7 @@ describe("atomic onboarding submission boundary", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ ok: true, state: "pending", emailSent: true });
     expect(mocks.createPendingSubscriber).toHaveBeenCalledTimes(1);
+    expect(mocks.createPendingSubscriber).toHaveBeenCalledWith(expect.objectContaining({ theme: "amber-brief" }));
     expect(mocks.issueVerificationEmailForSubscriber).toHaveBeenCalledWith({ subscriberId: "subscriber-1", email: "reader@example.com" });
   });
 

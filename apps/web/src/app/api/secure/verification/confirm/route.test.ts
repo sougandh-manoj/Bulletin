@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   token: "t".repeat(43),
   intent: "i".repeat(43),
+  inspectVerificationToken: vi.fn(),
+  loadSubscriberThemeForVerification: vi.fn(),
   consumeVerificationToken: vi.fn(),
   findSubscriberForManagement: vi.fn(),
   enforceRateLimit: vi.fn(),
@@ -20,6 +22,8 @@ vi.mock("next/headers", () => ({
 vi.mock("@/data/subscribers", () => ({
   consumeVerificationToken: mocks.consumeVerificationToken,
   findSubscriberForManagement: mocks.findSubscriberForManagement,
+  inspectVerificationToken: mocks.inspectVerificationToken,
+  loadSubscriberThemeForVerification: mocks.loadSubscriberThemeForVerification,
 }));
 vi.mock("@/env/server", () => ({
   getSecureAccessEnvironment: () => ({ APP_BASE_URL: "https://bulletin.example", LOG_LEVEL: "error" }),
@@ -45,6 +49,12 @@ describe("theme-led verification confirmation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.enforceRateLimit.mockResolvedValue(true);
+    mocks.inspectVerificationToken.mockResolvedValue({
+      is_valid: true,
+      subscriber_public_reference: "public-reference",
+      expires_at: "2026-07-16T02:30:00Z",
+    });
+    mocks.loadSubscriberThemeForVerification.mockResolvedValue("amber-brief");
     mocks.consumeVerificationToken.mockResolvedValue({
       subscriber_public_reference: "public-reference",
       next_delivery_at: "2026-07-16T02:30:00Z",
@@ -56,11 +66,12 @@ describe("theme-led verification confirmation", () => {
     });
   });
 
-  it("activates delivery with the selected theme in one deliberate request", async () => {
-    const response = await POST(request({ intent: mocks.intent, theme: "amber-brief" }));
+  it("activates delivery with the onboarding-selected theme in one deliberate request", async () => {
+    const response = await POST(request({ intent: mocks.intent }));
 
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ ok: true, theme: "amber-brief" });
+    expect(mocks.loadSubscriberThemeForVerification).toHaveBeenCalledWith("public-reference");
     expect(mocks.consumeVerificationToken).toHaveBeenCalledWith(
       expect.any(String),
       "amber-brief",
@@ -71,10 +82,11 @@ describe("theme-led verification confirmation", () => {
     });
   });
 
-  it("rejects a missing or unknown theme before consuming the verification token", async () => {
-    const response = await POST(request({ intent: mocks.intent, theme: "unknown-theme" }));
+  it("rejects a missing stored theme before consuming the verification token", async () => {
+    mocks.loadSubscriberThemeForVerification.mockResolvedValue(null);
+    const response = await POST(request({ intent: mocks.intent }));
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(503);
     expect(mocks.consumeVerificationToken).not.toHaveBeenCalled();
   });
 });

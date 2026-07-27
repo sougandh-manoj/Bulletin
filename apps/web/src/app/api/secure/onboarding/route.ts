@@ -1,4 +1,3 @@
-import { PRODUCT } from "@/config/product";
 import { createPendingSubscriber, findSubscriberForManagement } from "@/data/subscribers";
 import { createLogger } from "@/lib/logging/logger";
 import { invalidRequest, privateJson, rateLimited, unavailable } from "@/lib/security/api";
@@ -31,10 +30,7 @@ export async function POST(request: Request) {
     });
     if (!allowed) return rateLimited();
 
-    const result = await createPendingSubscriber({
-      ...parsed.data,
-      theme: PRODUCT.defaultTheme,
-    });
+    const result = await createPendingSubscriber(parsed.data);
 
     if (result.outcome === "existing-verified") {
       const subscriber = await findSubscriberForManagement(result.subscriber_id);

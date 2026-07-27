@@ -3,18 +3,10 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 
-import {
-  BRIEFING_THEME_LABELS,
-  BRIEFING_THEMES,
-  type BriefingTheme,
-} from "@/config/product";
-
 import styles from "../secure-access.module.css";
-import { ThemePreview, themeCardClassName } from "../theme-preview";
 
 export default function VerificationThemeForm({ intent }: { intent: string }) {
   const router = useRouter();
-  const [theme, setTheme] = useState<BriefingTheme>("light-editorial");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -27,7 +19,7 @@ export default function VerificationThemeForm({ intent }: { intent: string }) {
       const response = await fetch("/api/secure/verification/confirm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ intent, theme }),
+        body: JSON.stringify({ intent }),
       });
       const result = await response.json() as { ok?: boolean; message?: string };
       if (!response.ok || !result.ok) {
@@ -45,37 +37,17 @@ export default function VerificationThemeForm({ intent }: { intent: string }) {
 
   return (
     <form onSubmit={confirm}>
-      <section aria-labelledby="appearance-heading">
-        <p className={styles.eyebrow}>Choose your theme</p>
-        <h1 id="appearance-heading" className={styles.title}>How should your Bulletin look?</h1>
-        <p className={styles.lede}>Preview the same sample briefing in each edition.</p>
+      <section className={styles.narrow} aria-labelledby="confirmation-heading">
+        <p className={styles.eyebrow}>Confirm email</p>
+        <h1 id="confirmation-heading" className={styles.title}>Start your Bulletin.</h1>
+        <p className={styles.lede}>
+          Confirm this email address and your briefing will follow the delivery time you chose.
+        </p>
 
-        <div className={styles.themes}>
-          {BRIEFING_THEMES.map((option) => (
-            <div className={styles.themeOption} key={option}>
-              <p className={styles.themeOptionLabel}>{BRIEFING_THEME_LABELS[option]}</p>
-              <button
-                type="button"
-                className={`${styles.themeCard} ${themeCardClassName(option)}`}
-                aria-label={`Select ${BRIEFING_THEME_LABELS[option]} theme`}
-                data-selected={theme === option}
-                aria-pressed={theme === option}
-                disabled={submitting}
-                onClick={() => setTheme(option)}
-              >
-                <ThemePreview theme={option} />
-              </button>
-            </div>
-          ))}
-        </div>
-
-        <div className={`${styles.actions} ${styles.themeStartActions}`}>
+        <div className={styles.actions}>
           <button className={styles.button} type="submit" disabled={submitting}>
-            {submitting ? "Starting your Bulletin…" : "Start my Bulletin"}
+            {submitting ? "Confirming…" : "Confirm my Bulletin"}
           </button>
-          <p className={styles.themeSelectionNote} aria-live="polite">
-            {BRIEFING_THEME_LABELS[theme]} selected
-          </p>
         </div>
         {error && <p className={styles.error} role="alert">{error}</p>}
       </section>

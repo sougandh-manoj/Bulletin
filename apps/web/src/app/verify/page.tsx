@@ -15,7 +15,7 @@ import styles from "../secure-access.module.css";
 import { SecureShell } from "../secure-shell";
 import VerificationThemeForm from "./verification-theme-form";
 
-export const metadata: Metadata = { title: "Choose your theme", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Confirm email", robots: { index: false, follow: false } };
 
 export default async function VerifyPage({
   searchParams,

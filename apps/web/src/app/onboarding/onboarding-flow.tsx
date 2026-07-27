@@ -11,6 +11,8 @@ import {
 import Link from "next/link";
 
 import {
+  BRIEFING_THEME_LABELS,
+  BRIEFING_THEMES,
   DELIVERY_FREQUENCIES,
   DELIVERY_FREQUENCY_LABELS,
   getCanonicalIndianRegion,
@@ -46,6 +48,13 @@ import {
   STEP_CONTENT,
 } from "./onboarding-data";
 import styles from "./onboarding.module.css";
+
+const THEME_TONE_LABELS = {
+  "light-editorial": "Warm and minimal",
+  "dark-intelligence": "Structured and focused",
+  "midnight-brief": "Dark and quiet",
+  "amber-brief": "Bright and warm",
+} as const;
 
 type EmailCheckState = "idle" | "checking" | "existing" | "pending";
 type ResendState = "idle" | "sending" | "success" | "error";
@@ -1628,9 +1637,27 @@ export default function OnboardingFlow() {
                         <div className={styles.reviewHeading}>
                           <h2>Appearance</h2>
                         </div>
-                        <div>
-                          <span className={styles.themeSwatch} aria-hidden="true" />
-                          <p><strong>Light Editorial</strong><small>Default</small></p>
+                        <div className={styles.themeChoices} role="radiogroup" aria-label="Briefing appearance">
+                          {BRIEFING_THEMES.map((theme) => (
+                            <button
+                              key={theme}
+                              type="button"
+                              className={styles.themeChoice}
+                              data-theme={theme}
+                              data-selected={draft.theme === theme}
+                              role="radio"
+                              aria-checked={draft.theme === theme}
+                              onClick={() => updateDraft("theme", theme)}
+                            >
+                              <span className={styles.themeSwatch} aria-hidden="true" />
+                              <span>
+                                <strong>{BRIEFING_THEME_LABELS[theme]}</strong>
+                                <small>
+                                  {draft.theme === theme ? "Selected" : THEME_TONE_LABELS[theme]}
+                                </small>
+                              </span>
+                            </button>
+                          ))}
                         </div>
                       </section>
                     </div>

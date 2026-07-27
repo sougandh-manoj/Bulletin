@@ -164,6 +164,28 @@ export async function inspectVerificationToken(tokenHash: string) {
   }>(data);
 }
 
+export async function loadSubscriberThemeForVerification(
+  publicReference: string,
+) {
+  const database = getTrustedSupabase();
+  const { data, error } = await database
+    .from("subscribers")
+    .select(`
+      public_reference,
+      subscriber_preferences (
+        theme
+      )
+    `)
+    .eq("public_reference", publicReference)
+    .maybeSingle();
+  dataError(error);
+  if (!data) return null;
+  const preference = Array.isArray(data.subscriber_preferences)
+    ? data.subscriber_preferences[0]
+    : data.subscriber_preferences;
+  return preference?.theme as BriefingTheme | undefined;
+}
+
 export async function consumeVerificationToken(
   tokenHash: string,
   theme: BriefingTheme,

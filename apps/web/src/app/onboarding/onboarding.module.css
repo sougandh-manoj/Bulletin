@@ -1358,29 +1358,71 @@
   opacity: 0.78;
 }
 
-.appearanceReview > div:last-child {
+.themeChoices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.themeChoice {
   display: flex;
+  min-height: 74px;
   align-items: center;
   gap: 13px;
+  padding: 13px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(252, 250, 245, 0.62);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.themeChoice[data-selected="true"] {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  box-shadow: 0 8px 20px -18px rgba(49, 95, 145, 0.85);
+}
+
+.themeChoice:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 3px;
 }
 
 .themeSwatch {
   width: 38px;
   height: 30px;
+  flex: 0 0 auto;
   border: 1px solid var(--border);
   border-radius: 4px;
   background: linear-gradient(to bottom, var(--surface) 48%, var(--blue-soft) 48%);
   box-shadow: inset 0 -2px 0 var(--blue);
 }
 
-.appearanceReview p {
+.themeChoice[data-theme="dark-intelligence"] .themeSwatch {
+  background: linear-gradient(to bottom, #eef6fd 52%, #111820 52%);
+  box-shadow: inset 0 -2px 0 #1769aa;
+}
+
+.themeChoice[data-theme="midnight-brief"] .themeSwatch {
+  background: linear-gradient(to bottom, #111111 52%, #343434 52%);
+  box-shadow: inset 0 -2px 0 #70b5ff;
+}
+
+.themeChoice[data-theme="amber-brief"] .themeSwatch {
+  background: linear-gradient(to bottom, #fff8df 52%, #fffdf7 52%);
+  box-shadow: inset 0 -2px 0 #b87500;
+}
+
+.themeChoice > span:last-child {
   display: flex;
   flex-direction: column;
   gap: 1px;
   font-size: 0.8rem;
 }
 
-.appearanceReview small {
+.themeChoice small {
   color: var(--blue);
   font-size: 0.61rem;
   font-weight: 750;
@@ -1984,6 +2026,10 @@
 
   .review dl > div {
     grid-template-columns: 80px 1fr;
+  }
+
+  .themeChoices {
+    grid-template-columns: 1fr;
   }
 
   .consentField {

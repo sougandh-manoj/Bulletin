@@ -56,7 +56,7 @@ export async function GET(request: Request) {
     response.cookies.set(VERIFICATION_COOKIE_NAME, `${token}.${intent}`, {
       httpOnly: true,
       secure: true,
-      sameSite: "strict",
+      sameSite: "lax",
       path: "/",
       maxAge: VERIFICATION_INTENT_TTL_SECONDS,
       priority: "high",

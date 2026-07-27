@@ -32,7 +32,7 @@ describe("scanner-safe verification GET", () => {
     expect(cookie).toContain("__Host-bulletin_verify=");
     expect(cookie).toContain("HttpOnly");
     expect(cookie).toContain("Secure");
-    expect(cookie).toContain("SameSite=strict");
+    expect(cookie).toContain("SameSite=lax");
     expect(mocks.inspectVerificationToken).toHaveBeenCalledTimes(1);
   });
 

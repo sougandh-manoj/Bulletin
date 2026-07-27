@@ -73,7 +73,7 @@ export async function POST(request: Request) {
     cookieStore.set(VERIFICATION_COOKIE_NAME, "", {
       httpOnly: true,
       secure: true,
-      sameSite: "strict",
+      sameSite: "lax",
       path: "/",
       expires: new Date(0),
     });

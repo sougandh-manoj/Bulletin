@@ -17,6 +17,10 @@ export type ManagementLinkClaims = {
   expiresAt: number;
 };
 
+export type SignedManagementLinkClaims = ManagementLinkClaims & {
+  signature: string;
+};
+
 export function createOpaqueToken(bytes = 32) {
   return randomBytes(bytes).toString("base64url");
 }
@@ -47,7 +51,7 @@ export function signManagementClaims(
 }
 
 export function verifyManagementClaims(
-  input: ManagementLinkClaims & { signature: string },
+  input: SignedManagementLinkClaims,
   secret: string,
   now = Math.floor(Date.now() / 1000),
 ) {
@@ -68,16 +72,45 @@ export function verifyManagementClaims(
   return expected.length === supplied.length && timingSafeEqual(expected, supplied);
 }
 
+export function encodeManagementTicket(claims: SignedManagementLinkClaims) {
+  return Buffer.from(JSON.stringify({
+    r: claims.publicReference,
+    v: claims.tokenVersion,
+    e: claims.expiresAt,
+    s: claims.signature,
+  }), "utf8").toString("base64url");
+}
+
+export function decodeManagementTicket(ticket: string) {
+  if (!/^[A-Za-z0-9_-]{40,512}$/.test(ticket)) return null;
+  try {
+    const parsed = JSON.parse(Buffer.from(ticket, "base64url").toString("utf8")) as unknown;
+    const result = z.object({
+      r: publicReferenceSchema,
+      v: tokenVersionSchema,
+      e: unixSecondsSchema,
+      s: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
+    }).safeParse(parsed);
+    if (!result.success) return null;
+    return {
+      publicReference: result.data.r,
+      tokenVersion: result.data.v,
+      expiresAt: result.data.e,
+      signature: result.data.s,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export function buildManagementUrl(
   baseUrl: string,
   claims: ManagementLinkClaims,
   secret: string,
 ) {
-  const url = new URL("/access/manage", baseUrl);
-  url.searchParams.set("r", claims.publicReference);
-  url.searchParams.set("v", String(claims.tokenVersion));
-  url.searchParams.set("e", String(claims.expiresAt));
-  url.searchParams.set("s", signManagementClaims(claims, secret));
+  const url = new URL("/access/manage/", baseUrl);
+  const signature = signManagementClaims(claims, secret);
+  url.pathname += encodeManagementTicket({ ...claims, signature });
   return url.toString();
 }
 

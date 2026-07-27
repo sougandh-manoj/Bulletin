@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildManagementUrl,
   createOpaqueToken,
+  decodeManagementTicket,
   hashValue,
   parseSessionCookie,
   signManagementClaims,
@@ -52,11 +53,16 @@ describe("secure access cryptography", () => {
 
   it("builds only public claims and a signature into a link", () => {
     const url = new URL(buildManagementUrl("https://bulletin.example", claims, secret));
-    expect(url.pathname).toBe("/access/manage");
-    expect(url.searchParams.get("r")).toBe(claims.publicReference);
-    expect(url.searchParams.get("v")).toBe("3");
-    expect(url.searchParams.get("e")).toBe(String(claims.expiresAt));
+    expect(url.pathname).toMatch(/^\/access\/manage\/[A-Za-z0-9_-]+$/);
+    expect(url.search).toBe("");
+    const ticket = url.pathname.split("/").at(-1) ?? "";
+    expect(decodeManagementTicket(ticket)).toMatchObject(claims);
     expect(url.toString()).not.toContain(secret);
+  });
+
+  it("rejects malformed management path tickets", () => {
+    expect(decodeManagementTicket("not-json")).toBeNull();
+    expect(decodeManagementTicket("short")).toBeNull();
   });
 
   it("parses only the exact two-part session-cookie shape", () => {

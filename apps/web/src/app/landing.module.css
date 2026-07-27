@@ -364,24 +364,6 @@
   animation: rise-in 560ms 160ms ease both;
 }
 
-.previewLabel {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin: 0 0 15px;
-  color: var(--landing-faint);
-  font-size: 0.72rem;
-  font-weight: 750;
-  letter-spacing: 0.08em;
-  line-height: 1.4;
-  text-transform: uppercase;
-}
-
-.mailIcon {
-  color: var(--landing-blue);
-  font-size: 1rem;
-}
-
 .previewStack {
   position: relative;
 }
@@ -1381,10 +1363,6 @@
   .heroNote {
     margin-top: 15px;
     text-align: center;
-  }
-
-  .previewLabel {
-    align-items: flex-start;
   }
 
   .previewStack::before {

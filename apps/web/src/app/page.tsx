@@ -91,9 +91,12 @@ export default function Home() {
             <div className={styles.heroCopy} data-reveal-hero>
               <p className={styles.eyebrow}>A personal email news briefing</p>
               <h1 id="hero-title">{PRODUCT.landing.title}</h1>
-              <p className={styles.heroLede}>
+              <p className={`${styles.heroLede} ${styles.desktopCopy}`}>
                 {PRODUCT.landing.description} Receive a finite read at the exact
                 time you choose—never an endless feed.
+              </p>
+              <p className={`${styles.heroLede} ${styles.mobileCopy}`}>
+                Your news, filtered hard. A clear email at the time you choose.
               </p>
               <div className={styles.heroActions}>
                 <Link className={styles.primaryButton} href={PUBLIC_ROUTES.onboarding}>
@@ -162,10 +165,11 @@ export default function Home() {
             <div className={styles.sectionHeading} data-reveal>
               <p className={styles.eyebrow}>Shaped by you</p>
               <h2 id="preferences-title">Start with what matters to you.</h2>
-              <p>
+              <p className={styles.desktopCopy}>
                 Choose your interests, add your own topics, and leave out what you
                 do not want. Your choices stay explicit and editable.
               </p>
+              <p className={styles.mobileCopy}>Pick the topics. Skip the noise.</p>
             </div>
 
             <div className={styles.preferenceCanvas} data-reveal>
@@ -194,10 +198,11 @@ export default function Home() {
             <div className={styles.sectionHeading} data-reveal>
               <p className={styles.eyebrow}>How it works</p>
               <h2 id="process-title">From scattered reporting to one clear briefing.</h2>
-              <p>
+              <p className={styles.desktopCopy}>
                 Bulletin is designed to bring trustworthy reporting together while
                 keeping the original sources visible.
               </p>
+              <p className={styles.mobileCopy}>Three choices. One concise briefing.</p>
             </div>
 
             <ol className={styles.steps} data-reveal-group>
@@ -225,10 +230,11 @@ export default function Home() {
             <div className={styles.sectionHeading} data-reveal>
               <p className={styles.eyebrow}>Inside each story</p>
               <h2 id="inside-title">Context without losing the source.</h2>
-              <p>
+              <p className={styles.desktopCopy}>
                 Each story is designed to answer what happened, why it matters, and
                 where the original reporting can be read.
               </p>
+              <p className={styles.mobileCopy}>The point up front. Sources always visible.</p>
             </div>
 
             <div className={styles.anatomyGrid} data-reveal-group>
@@ -271,10 +277,11 @@ export default function Home() {
               <div className={styles.sectionHeading} data-reveal-item>
                 <p className={styles.eyebrow}>Your routine</p>
                 <h2 id="schedule-title">Delivered when you choose to read.</h2>
-                <p>
+                <p className={styles.desktopCopy}>
                   Choose two to six stories from every selected category, in English, Hindi, or Malayalam, at the
                   exact local delivery time that fits your day.
                 </p>
+                <p className={styles.mobileCopy}>A finite read. On your clock.</p>
               </div>
               <dl className={styles.scheduleBoard} data-reveal-item>
                 <div><dt>Coverage</dt><dd>2–6 per category</dd></div>
@@ -296,10 +303,11 @@ export default function Home() {
             <div className={styles.sectionHeading} data-reveal>
               <p className={styles.eyebrow}>Appearance</p>
               <h2 id="appearance-title">A briefing that feels right to read.</h2>
-              <p>
+              <p className={styles.desktopCopy}>
                 Choose an appearance after confirming your email, then change it
                 whenever you like from Manage briefing.
               </p>
+              <p className={styles.mobileCopy}>Choose the look after email confirmation.</p>
             </div>
 
             <div className={styles.themeGrid} data-reveal-group>
@@ -335,7 +343,8 @@ export default function Home() {
               <div className={styles.sectionHeading} data-reveal>
                 <p className={styles.eyebrow}>A calmer model</p>
                 <h2 id="trust-title">Stay informed without living in a feed.</h2>
-                <p>{PRODUCT.promise}</p>
+                <p className={styles.desktopCopy}>{PRODUCT.promise}</p>
+                <p className={styles.mobileCopy}>No feed. No doomscroll. Just the briefing.</p>
               </div>
               <div className={styles.trustList} data-reveal-group>
                 <article data-reveal-item>

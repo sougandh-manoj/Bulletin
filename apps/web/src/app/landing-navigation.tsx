@@ -8,10 +8,51 @@ import { PRODUCT, PUBLIC_ROUTES } from "@/config/product";
 import styles from "./landing.module.css";
 
 const NAVIGATION_ITEMS = [
-  { href: "#your-briefing", label: "Your briefing" },
-  { href: "#how-it-works", label: "How it works" },
-  { href: "#why-bulletin", label: "Why Bulletin" },
+  { href: "#your-briefing", icon: "briefing", label: "Your briefing" },
+  { href: "#how-it-works", icon: "process", label: "How it works" },
+  { href: "#why-bulletin", icon: "calm", label: "Why Bulletin" },
 ] as const;
+
+function NavigationIcon({
+  icon,
+}: {
+  icon: (typeof NAVIGATION_ITEMS)[number]["icon"];
+}) {
+  if (icon === "process") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24">
+        <path d="M5 7h7" />
+        <path d="M12 7l-2-2" />
+        <path d="M12 7l-2 2" />
+        <path d="M19 17h-7" />
+        <path d="M12 17l2-2" />
+        <path d="M12 17l2 2" />
+        <path d="M6 14a4 4 0 0 1 0-4" />
+        <path d="M18 10a4 4 0 0 1 0 4" />
+      </svg>
+    );
+  }
+
+  if (icon === "calm") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24">
+        <path d="M5 8h14" />
+        <path d="M7 12h10" />
+        <path d="M9 16h6" />
+        <path d="M12 4v2" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M6 5h9l3 3v11H6z" />
+      <path d="M15 5v4h3" />
+      <path d="M9 12h6" />
+      <path d="M9 15h4" />
+    </svg>
+  );
+}
 
 async function scrollToSection(
   event: MouseEvent<HTMLAnchorElement>,
@@ -199,6 +240,9 @@ export function LandingNavigation() {
                   void scrollToSection(event, item.href, isOpen, closeMenu)
                 }
               >
+                <span className={styles.drawerNavIcon}>
+                  <NavigationIcon icon={item.icon} />
+                </span>
                 {item.label}
               </a>
             ))}

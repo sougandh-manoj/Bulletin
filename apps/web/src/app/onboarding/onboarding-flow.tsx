@@ -947,7 +947,7 @@ export default function OnboardingFlow() {
       };
       if (!response.ok || !result.ok || !result.emailSent) {
         setSubmissionError(
-          result.message ?? "We couldn’t send the verification email. Your choices are still here—please try again.",
+          result.message ?? "We couldn’t send the confirmation email just now. Your choices are saved here. Please try again.",
         );
         return;
       }
@@ -961,7 +961,7 @@ export default function OnboardingFlow() {
       });
     } catch {
       setSubmissionError(
-        "We couldn’t send the verification email. Your choices are still here—please try again.",
+        "We couldn’t send the confirmation email just now. Your choices are saved here. Please try again.",
       );
     } finally {
       setSubmitting(false);

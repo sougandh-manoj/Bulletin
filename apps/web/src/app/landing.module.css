@@ -151,7 +151,6 @@
 }
 
 .headerCta,
-.drawerCta,
 .primaryButton {
   display: inline-flex;
   min-height: 48px;
@@ -176,120 +175,10 @@
 }
 
 .headerCta:hover,
-.drawerCta:hover,
 .primaryButton:hover {
   border-color: var(--landing-blue-dark);
   background: var(--landing-blue-dark);
   transform: translateY(-1px);
-}
-
-.menuToggle {
-  position: relative;
-  display: none;
-  width: 44px;
-  height: 44px;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  border-radius: 7px;
-  background: transparent;
-  color: var(--landing-ink);
-  cursor: pointer;
-}
-
-.menuToggle:hover {
-  background: var(--landing-blue-soft);
-}
-
-.menuToggle span,
-.menuToggle span::before,
-.menuToggle span::after {
-  position: absolute;
-  width: 19px;
-  height: 2px;
-  border-radius: 999px;
-  background: currentColor;
-  content: "";
-  transition: transform 180ms ease, opacity 180ms ease;
-}
-
-.menuToggle span::before {
-  transform: translateY(-6px);
-}
-
-.menuToggle span::after {
-  transform: translateY(6px);
-}
-
-.menuToggle[aria-expanded="true"] span {
-  background: transparent;
-}
-
-.menuToggle[aria-expanded="true"] span::before {
-  background: var(--landing-ink);
-  transform: rotate(45deg);
-}
-
-.menuToggle[aria-expanded="true"] span::after {
-  background: var(--landing-ink);
-  transform: rotate(-45deg);
-}
-
-.mobileDrawer {
-  position: fixed;
-  z-index: 890;
-  inset: 72px 0 0;
-  display: flex;
-  height: calc(100dvh - 72px);
-  flex-direction: column;
-  padding: 18px 24px 32px;
-  background: var(--landing-bg);
-  animation: drawer-in 180ms ease both;
-}
-
-.mobileDrawer nav {
-  display: flex;
-  flex-direction: column;
-}
-
-.mobileDrawer nav a {
-  display: flex;
-  min-height: 58px;
-  align-items: center;
-  gap: 14px;
-  border-bottom: 1px solid var(--landing-border);
-  font-family: var(--landing-serif);
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-.drawerNavIcon {
-  display: inline-flex;
-  width: 34px;
-  height: 34px;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--landing-border);
-  border-radius: 7px;
-  background: var(--landing-blue-soft);
-  color: var(--landing-blue);
-}
-
-.drawerNavIcon svg {
-  width: 19px;
-  height: 19px;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.8;
-}
-
-.drawerCta {
-  width: 100%;
-  margin-top: 28px;
 }
 
 .hero {
@@ -1078,10 +967,6 @@
     display: none;
   }
 
-  .menuToggle {
-    display: inline-flex;
-  }
-
   .section {
     padding: 84px 0;
   }
@@ -1147,17 +1032,6 @@
     min-height: 40px;
     padding: 9px 12px;
     font-size: 0.72rem;
-  }
-
-  .menuToggle {
-    width: 40px;
-    height: 40px;
-  }
-
-  .mobileDrawer {
-    inset: 64px 0 0;
-    height: calc(100dvh - 64px);
-    padding-inline: 18px;
   }
 
   .hero {

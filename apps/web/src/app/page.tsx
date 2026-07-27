@@ -225,52 +225,6 @@ export default function Home() {
           </div>
         </section>
 
-        <section className={styles.section} aria-labelledby="inside-title">
-          <div className={styles.sectionInner}>
-            <div className={styles.sectionHeading} data-reveal>
-              <p className={styles.eyebrow}>Inside each story</p>
-              <h2 id="inside-title">Context without losing the source.</h2>
-              <p className={styles.desktopCopy}>
-                Each story is designed to answer what happened, why it matters, and
-                where the original reporting can be read.
-              </p>
-              <p className={styles.mobileCopy}>The point up front. Sources always visible.</p>
-            </div>
-
-            <div className={styles.anatomyGrid} data-reveal-group>
-              <article className={styles.anatomyCard} data-reveal-item>
-                <div className={styles.anatomyTopline}>
-                  <span><b>1</b> Science</span>
-                  <span><b>2</b> Meaningful update</span>
-                </div>
-                <h3>A clean headline makes the central development clear</h3>
-                <p className={styles.anatomySummary}>
-                  <b>3</b>
-                  A concise summary focuses on supported facts, relevant context, and
-                  any uncertainty that should remain visible.
-                </p>
-                <p className={styles.anatomyWhy}>
-                  <b>4</b>
-                  <span><strong>Why it matters</strong> A short explanation connects the story to its wider significance.</span>
-                </p>
-                <div className={styles.anatomySources}>
-                  <b>5</b>
-                  <span><SourceMark />Original publisher</span>
-                  <span><SourceMark />Supporting source</span>
-                </div>
-              </article>
-
-              <ol className={styles.anatomyLegend} data-reveal-item>
-                <li><span>1</span><div><h3>Clear category</h3><p>A familiar label from the interests you chose.</p></div></li>
-                <li><span>2</span><div><h3>Update marker</h3><p>Reserved for a genuine development, not routine repetition.</p></div></li>
-                <li><span>3</span><div><h3>Concise summary</h3><p>A finite read focused on the facts that carry the story.</p></div></li>
-                <li><span>4</span><div><h3>Why it matters</h3><p>A plain-language line of useful context.</p></div></li>
-                <li><span>5</span><div><h3>Original sources</h3><p>Visible links make it easy to continue with the reporting.</p></div></li>
-              </ol>
-            </div>
-          </div>
-        </section>
-
         <section className={`${styles.section} ${styles.scheduleSection}`} aria-labelledby="schedule-title">
           <div className={styles.sectionInner}>
             <div className={styles.scheduleGrid} data-reveal-group>

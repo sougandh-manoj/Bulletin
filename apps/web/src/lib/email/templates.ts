@@ -72,7 +72,7 @@ export function buildVerificationEmail(verificationUrl: string) {
   return {
     subject: "Confirm your Bulletin",
     text: [
-      "Choose your theme to start your Bulletin.",
+      "Confirm your email to start your Bulletin.",
       "",
       verificationUrl,
       "",
@@ -80,10 +80,10 @@ export function buildVerificationEmail(verificationUrl: string) {
       "If you did not request this, you can safely ignore it.",
     ].join("\n"),
     html: emailFrame({
-      eyebrow: "Finish setup",
-      heading: "Choose your Bulletin theme",
-      body: "Pick the look you prefer and start your Bulletin.",
-      actionLabel: "Choose my theme",
+      eyebrow: "Confirm email",
+      heading: "Confirm your Bulletin",
+      body: "Use this link to confirm your email. Your briefing will follow the delivery time and appearance you chose.",
+      actionLabel: "Confirm my email",
       actionUrl: verificationUrl,
       note: "This link expires after 24 hours. A newer link replaces every older active link.",
     }),

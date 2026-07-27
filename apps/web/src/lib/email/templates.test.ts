@@ -6,9 +6,10 @@ describe("transactional email templates", () => {
   it("makes verification scanner-safe and states its expiry", () => {
     const email = buildVerificationEmail("https://bulletin.example/access/verify?t=safe_test_token");
     expect(email.subject).toBe("Confirm your Bulletin");
-    expect(email.text).toContain("Choose your theme");
+    expect(email.text).toContain("Confirm your email");
     expect(email.text).toContain("expires after 24 hours");
-    expect(email.html).toContain("Choose my theme");
+    expect(email.html).toContain("Confirm my email");
+    expect(email.html).not.toContain("Choose your Bulletin theme");
     expect(email.html).toContain('<meta name="color-scheme" content="light only">');
     expect(email.html).toContain('<meta name="supported-color-schemes" content="light only">');
     expect(email.html).toContain('bgcolor="#f6f3ec"');

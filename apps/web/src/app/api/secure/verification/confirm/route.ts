@@ -27,6 +27,7 @@ export const runtime = "nodejs";
 const logger = createLogger("verification-confirm");
 const confirmationSchema = z.object({
   intent: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
+  token: z.string().regex(/^[A-Za-z0-9_-]{43}$/).optional(),
 });
 
 export async function POST(request: Request) {
@@ -43,20 +44,23 @@ export async function POST(request: Request) {
     const verification = parseSessionCookie(
       cookieStore.get(VERIFICATION_COOKIE_NAME)?.value,
     );
-    if (!verification || verification.csrfToken !== parsedBody.data.intent) {
+    const sessionToken = verification?.csrfToken === parsedBody.data.intent
+      ? verification.sessionToken
+      : parsedBody.data.token;
+    if (!sessionToken) {
       return privateJson({ ok: false, message: "This verification page has expired." }, { status: 409 });
     }
 
     const allowed = await enforceRateLimit({
       request,
       scope: "token-validation",
-      discriminator: verification.sessionToken,
+      discriminator: sessionToken,
       limit: 10,
       windowSeconds: 15 * 60,
     });
     if (!allowed) return rateLimited();
 
-    const tokenHash = toPostgresBytea(hashValue(verification.sessionToken));
+    const tokenHash = toPostgresBytea(hashValue(sessionToken));
     const inspection = await inspectVerificationToken(tokenHash);
     const theme = inspection?.subscriber_public_reference
       ? await loadSubscriberThemeForVerification(inspection.subscriber_public_reference)

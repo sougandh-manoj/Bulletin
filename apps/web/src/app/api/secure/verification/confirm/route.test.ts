@@ -10,12 +10,13 @@ const mocks = vi.hoisted(() => ({
   enforceRateLimit: vi.fn(),
   clearSubscriberSessionCookie: vi.fn(),
   establishSubscriberSession: vi.fn(),
+  cookieGet: vi.fn(),
   cookieSet: vi.fn(),
 }));
 
 vi.mock("next/headers", () => ({
   cookies: async () => ({
-    get: () => ({ value: `${mocks.token}.${mocks.intent}` }),
+    get: mocks.cookieGet,
     set: mocks.cookieSet,
   }),
 }));
@@ -45,9 +46,10 @@ function request(body: unknown) {
   });
 }
 
-describe("theme-led verification confirmation", () => {
+describe("verification confirmation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.cookieGet.mockReturnValue({ value: `${mocks.token}.${mocks.intent}` });
     mocks.enforceRateLimit.mockResolvedValue(true);
     mocks.inspectVerificationToken.mockResolvedValue({
       is_valid: true,
@@ -88,5 +90,16 @@ describe("theme-led verification confirmation", () => {
 
     expect(response.status).toBe(503);
     expect(mocks.consumeVerificationToken).not.toHaveBeenCalled();
+  });
+
+  it("can confirm with the URL fallback token when the redirect cookie is unavailable", async () => {
+    mocks.cookieGet.mockReturnValueOnce(undefined);
+    const response = await POST(request({ intent: mocks.intent, token: mocks.token }));
+
+    expect(response.status).toBe(200);
+    expect(mocks.consumeVerificationToken).toHaveBeenCalledWith(
+      expect.any(String),
+      "amber-brief",
+    );
   });
 });

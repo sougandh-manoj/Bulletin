@@ -5,7 +5,13 @@ import { FormEvent, useState } from "react";
 
 import styles from "../secure-access.module.css";
 
-export default function VerificationThemeForm({ intent }: { intent: string }) {
+export default function VerificationThemeForm({
+  intent,
+  token,
+}: {
+  intent: string;
+  token?: string;
+}) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -19,7 +25,7 @@ export default function VerificationThemeForm({ intent }: { intent: string }) {
       const response = await fetch("/api/secure/verification/confirm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ intent }),
+        body: JSON.stringify({ intent, token }),
       });
       const result = await response.json() as { ok?: boolean; message?: string };
       if (!response.ok || !result.ok) {

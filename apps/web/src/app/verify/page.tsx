@@ -20,19 +20,25 @@ export const metadata: Metadata = { title: "Confirm email", robots: { index: fal
 export default async function VerifyPage({
   searchParams,
 }: {
-  searchParams: Promise<{ state?: string }>;
+  searchParams: Promise<{ i?: string; state?: string; t?: string }>;
 }) {
-  const { state } = await searchParams;
+  const { i: intentParam, state, t: tokenParam } = await searchParams;
   const cookieStore = await cookies();
   const verification = parseSessionCookie(
     cookieStore.get(VERIFICATION_COOKIE_NAME)?.value,
   );
+  const fallbackVerification =
+    /^[A-Za-z0-9_-]{43}$/.test(tokenParam ?? "") &&
+    /^[A-Za-z0-9_-]{43}$/.test(intentParam ?? "")
+      ? { sessionToken: tokenParam as string, csrfToken: intentParam as string }
+      : null;
+  const activeVerification = verification ?? fallbackVerification;
 
   let valid = false;
-  if (!state && verification) {
+  if (!state && activeVerification) {
     try {
       const inspection = await inspectVerificationToken(
-        toPostgresBytea(hashValue(verification.sessionToken)),
+        toPostgresBytea(hashValue(activeVerification.sessionToken)),
       );
       valid = Boolean(inspection?.is_valid);
     } catch {
@@ -42,8 +48,11 @@ export default async function VerifyPage({
 
   return (
     <SecureShell>
-      {valid && verification ? (
-        <VerificationThemeForm intent={verification.csrfToken} />
+      {valid && activeVerification ? (
+        <VerificationThemeForm
+          intent={activeVerification.csrfToken}
+          token={verification ? undefined : fallbackVerification?.sessionToken}
+        />
       ) : (
         <div className={styles.narrow}>
           <p className={styles.eyebrow}>Email link</p>

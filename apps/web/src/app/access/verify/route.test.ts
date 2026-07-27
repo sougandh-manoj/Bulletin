@@ -23,11 +23,13 @@ describe("scanner-safe verification GET", () => {
     mocks.inspectVerificationToken.mockResolvedValue({ is_valid: true });
   });
 
-  it("only inspects, sets a protected intent cookie, and removes the token from the URL", async () => {
+  it("only inspects, sets a protected intent cookie, and redirects with a browser fallback", async () => {
     const response = await GET(new Request(`https://bulletin.example/access/verify?t=${token}`));
     expect(response.status).toBe(303);
-    expect(response.headers.get("location")).toBe("https://bulletin.example/verify");
-    expect(response.headers.get("location")).not.toContain(token);
+    const location = response.headers.get("location") ?? "";
+    expect(location).toContain("https://bulletin.example/verify?");
+    expect(location).toContain(`t=${token}`);
+    expect(location).toMatch(/i=[A-Za-z0-9_-]{43}/);
     const cookie = response.headers.get("set-cookie") ?? "";
     expect(cookie).toContain("__Host-bulletin_verify=");
     expect(cookie).toContain("HttpOnly");

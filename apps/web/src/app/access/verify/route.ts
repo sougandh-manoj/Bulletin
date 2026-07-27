@@ -49,6 +49,8 @@ export async function GET(request: Request) {
     }
 
     const intent = createOpaqueToken();
+    destination.searchParams.set("t", token);
+    destination.searchParams.set("i", intent);
     const response = NextResponse.redirect(destination, {
       status: 303,
       headers: PRIVATE_RESPONSE_HEADERS,

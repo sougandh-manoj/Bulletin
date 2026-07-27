@@ -347,6 +347,10 @@
   font-weight: 700;
 }
 
+.mobileManageButton {
+  display: none;
+}
+
 .heroNote {
   margin: 22px 0 0;
   color: var(--landing-faint);
@@ -1352,9 +1356,22 @@
   }
 
   .heroActions .primaryButton,
+  .heroActions .mobileManageButton,
   .heroActions .textLink {
     width: 100%;
     justify-content: center;
+  }
+
+  .heroActions .mobileManageButton {
+    display: inline-flex;
+    min-height: 48px;
+    align-items: center;
+    border: 1px solid var(--landing-border);
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--landing-surface) 82%, transparent);
+    color: var(--landing-ink);
+    font-size: 0.9rem;
+    font-weight: 750;
   }
 
   .heroActions .textLink {

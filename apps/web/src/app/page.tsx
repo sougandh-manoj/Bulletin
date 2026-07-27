@@ -100,6 +100,9 @@ export default function Home() {
                   Create my briefing
                   <ArrowIcon />
                 </Link>
+                <Link className={styles.mobileManageButton} href={PUBLIC_ROUTES.manageAccess}>
+                  Manage briefing
+                </Link>
                 <a className={styles.textLink} href="#your-briefing">
                   See what arrives
                 </a>

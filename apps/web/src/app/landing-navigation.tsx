@@ -202,9 +202,6 @@ export function LandingNavigation() {
                 {item.label}
               </a>
             ))}
-            <Link href={PUBLIC_ROUTES.manageAccess} onClick={() => closeMenu()}>
-              Manage briefing
-            </Link>
           </nav>
           <Link
             className={styles.drawerCta}

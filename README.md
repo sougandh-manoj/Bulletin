@@ -56,10 +56,6 @@ docs/         Architecture notes and launch runbooks
 tools/        Utility scripts
 ```
 
-## Environment
-
-Use `apps/web/.env.example` as the template for local configuration. Keep real API keys, SMTP credentials, Supabase service-role keys, subscriber data, and private links out of git.
-
 ## Status
 
 This repository is an active product build for Bulletin, including the web app, ingestion pipeline, intelligence layer, delivery workflow, and production readiness checks.

@@ -173,7 +173,12 @@
 
 .authActions {
   display: grid;
-  gap: 12px;
+  gap: 14px;
+}
+
+.signInActions {
+  width: 100%;
+  margin-top: 38px;
 }
 
 .authActions .button,
@@ -185,38 +190,71 @@
 }
 
 .providerButton {
-  min-height: 48px;
-  border: 1px solid #15191d;
-  border-radius: 2px;
-  padding: 12px 20px;
+  position: relative;
+  min-height: 56px;
+  border: 1px solid #c8c8c8;
+  border-radius: 14px;
+  padding: 14px 56px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: #15191d;
-  font-size: 14px;
-  font-weight: 800;
+  font-size: 15px;
+  font-weight: 650;
   text-decoration: none;
+  box-shadow: 0 1px 2px rgba(15, 18, 21, 0.05);
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
 }
 
 .providerButton:disabled {
   cursor: not-allowed;
-  opacity: 0.78;
+  opacity: 0.68;
 }
 
 .googleButton {
-  background: #fffefa;
+  background: #fff;
+}
+
+.googleButton:hover {
+  border-color: #a8a8a8;
+  box-shadow: 0 3px 10px rgba(15, 18, 21, 0.08);
+  transform: translateY(-1px);
 }
 
 .appleButton {
-  background: #15191d;
+  border-color: #1d1d1f;
+  background: #1d1d1f;
   color: #fff;
 }
 
+.providerIcon {
+  position: absolute;
+  left: 20px;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+}
+
+.providerIcon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.providerLabel {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
+}
+
 .comingSoon {
-  margin-left: 10px;
   color: rgba(255, 255, 255, 0.62);
   font-size: 11px;
   font-weight: 300;
+  white-space: nowrap;
 }
 
 .providerButton:focus-visible {
@@ -1838,6 +1876,18 @@
 
   .card {
     padding: 24px 20px;
+  }
+
+  .providerButton {
+    padding-inline: 48px 18px;
+  }
+
+  .providerIcon {
+    left: 18px;
+  }
+
+  .providerLabel {
+    gap: 7px;
   }
 
   .themeCard {

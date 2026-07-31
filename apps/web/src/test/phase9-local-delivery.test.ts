@@ -2,7 +2,9 @@ import { createHash, randomUUID } from "node:crypto";
 
 import { describe, expect, it, vi } from "vitest";
 
-import { hasDeliveredBriefing, loadLatestDeliveredBriefing } from "@/data/delivery";
+import {
+  loadTodaysDeliveredBriefing,
+} from "@/data/delivery";
 import { getTrustedSupabase } from "@/lib/supabase/server";
 import { runDeliveryBatch } from "@/services/delivery";
 
@@ -59,13 +61,13 @@ describe.skipIf(!localOnly)("Phase 9 local non-sending delivery integration", ()
       expect(send).toHaveBeenCalledOnce();
       const { data: delivery } = await database.from("deliveries").select("status,smtp_message_id,sent_at").eq("id", deliveryId).single();
       expect(delivery).toMatchObject({ status: "sent", smtp_message_id: "phase9-non-sending-receipt" });
-      expect(await hasDeliveredBriefing({ subscriberId, database })).toBe(true);
-      const webBriefing = await loadLatestDeliveredBriefing({
+      const webBriefing = await loadTodaysDeliveredBriefing({
         owner: {
           subscriberId,
           subscriberName: "Phase 9 Fixture",
           timezone: "Asia/Kolkata",
         },
+        now: new Date("2026-07-20T02:31:00Z"),
         database,
       });
       expect(webBriefing).toMatchObject({
@@ -79,6 +81,15 @@ describe.skipIf(!localOnly)("Phase 9 local non-sending delivery integration", ()
           sources: [{ url: `https://fixture.invalid/${articleId}` }],
         }],
       });
+      expect(await loadTodaysDeliveredBriefing({
+        owner: {
+          subscriberId,
+          subscriberName: "Phase 9 Fixture",
+          timezone: "Asia/Kolkata",
+        },
+        now: new Date("2026-07-21T02:31:00Z"),
+        database,
+      })).toBeNull();
       const retry = await runDeliveryBatch({ workerId: randomUUID(), batchSize: 10, leaseSeconds: 300, now, dependencies: { send, heartbeat: async () => undefined, alert: async () => false, resolveAlert: async () => false } });
       expect(retry.claimed).toBe(0);
       expect(send).toHaveBeenCalledOnce();

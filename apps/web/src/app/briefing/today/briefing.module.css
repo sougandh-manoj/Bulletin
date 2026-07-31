@@ -1,0 +1,65 @@
+.content {
+  width: min(760px, 100%);
+  margin: 0 auto;
+}
+
+.heading {
+  margin-bottom: 34px;
+}
+
+.frame {
+  width: 100%;
+  display: block;
+  border: 0;
+  background: transparent;
+}
+
+.waiting {
+  width: min(680px, 100%);
+  margin: 6vh auto 0;
+}
+
+.waitingPanel {
+  margin-top: 34px;
+  padding: 28px 0;
+  border-top: 1px solid #d8d4cb;
+  border-bottom: 1px solid #d8d4cb;
+}
+
+.waitingPanel p {
+  margin: 0;
+  color: #5e6267;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.waitingPanel strong {
+  color: #15191d;
+}
+
+.manageLink {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  margin-top: 22px;
+  color: #315f91;
+  font-size: 14px;
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+@media (max-width: 680px) {
+  .heading {
+    margin-bottom: 22px;
+  }
+
+  .waiting {
+    margin-top: 2vh;
+  }
+
+  .waitingPanel {
+    margin-top: 26px;
+    padding: 22px 0;
+  }
+}

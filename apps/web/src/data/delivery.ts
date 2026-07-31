@@ -78,38 +78,52 @@ type DeliveryStoryRow = {
   is_update: boolean;
 };
 
-export async function hasDeliveredBriefing(input: {
-  subscriberId: string;
-  database?: SupabaseClient;
-}) {
-  const database = input.database ?? getTrustedSupabase();
-  const { data, error } = await database
-    .from("deliveries")
-    .select("id")
-    .eq("subscriber_id", input.subscriberId)
-    .eq("status", "sent")
-    .order("sent_at", { ascending: false })
-    .limit(1)
-    .maybeSingle<{ id: string }>();
-  dataError(error);
-  return Boolean(data);
+function localDateKey(value: Date | string, timezone: string) {
+  const parts = new Intl.DateTimeFormat("en", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: timezone,
+  }).formatToParts(new Date(value));
+  const part = (type: "year" | "month" | "day") =>
+    parts.find((item) => item.type === type)?.value ?? "";
+  return `${part("year")}-${part("month")}-${part("day")}`;
 }
 
-export async function loadLatestDeliveredBriefing(input: {
+export async function loadTodaysDeliveredBriefing(input: {
   owner: DeliveredBriefingOwner;
+  now?: Date;
   database?: SupabaseClient;
 }): Promise<DeliveryRenderContext | null> {
   const database = input.database ?? getTrustedSupabase();
-  const { data: delivery, error: deliveryError } = await database
+  const now = input.now ?? new Date();
+  const rangeStart = new Date(now.getTime() - 36 * 60 * 60_000).toISOString();
+  const rangeEnd = new Date(now.getTime() + 36 * 60 * 60_000).toISOString();
+  const { data: deliveries, error } = await database
     .from("deliveries")
     .select("id,scheduled_for,preference_version,language,theme,actual_story_count,attempt_count")
     .eq("subscriber_id", input.owner.subscriberId)
     .eq("status", "sent")
+    .gte("scheduled_for", rangeStart)
+    .lte("scheduled_for", rangeEnd)
     .order("sent_at", { ascending: false })
-    .limit(1)
-    .maybeSingle<DeliveryRow>();
-  dataError(deliveryError);
+    .returns<DeliveryRow[]>();
+  dataError(error);
+
+  const today = localDateKey(now, input.owner.timezone);
+  const delivery = (deliveries ?? []).find(
+    (candidate) => localDateKey(candidate.scheduled_for, input.owner.timezone) === today,
+  );
   if (!delivery) return null;
+  return loadDeliveredBriefing({ owner: input.owner, delivery, database });
+}
+
+async function loadDeliveredBriefing(input: {
+  owner: DeliveredBriefingOwner;
+  delivery: DeliveryRow;
+  database: SupabaseClient;
+}): Promise<DeliveryRenderContext> {
+  const { owner, delivery, database } = input;
 
   const { data: storedStories, error: storiesError } = await database
     .from("delivery_stories")
@@ -126,14 +140,14 @@ export async function loadLatestDeliveredBriefing(input: {
   if (stories.length === 0) {
     return {
       deliveryId: delivery.id,
-      subscriberId: input.owner.subscriberId,
+      subscriberId: owner.subscriberId,
       recipient: "",
-      subscriberName: input.owner.subscriberName,
+      subscriberName: owner.subscriberName,
       scheduledFor: delivery.scheduled_for,
       preferenceVersion: Number(delivery.preference_version),
       language: delivery.language,
       theme: delivery.theme,
-      timezone: input.owner.timezone,
+      timezone: owner.timezone,
       actualStoryCount: 0,
       attemptCount: Number(delivery.attempt_count),
       stories: [],
@@ -186,14 +200,14 @@ export async function loadLatestDeliveredBriefing(input: {
 
   return {
     deliveryId: delivery.id,
-    subscriberId: input.owner.subscriberId,
+    subscriberId: owner.subscriberId,
     recipient: "",
-    subscriberName: input.owner.subscriberName,
+    subscriberName: owner.subscriberName,
     scheduledFor: delivery.scheduled_for,
     preferenceVersion: Number(delivery.preference_version),
     language: delivery.language,
     theme: delivery.theme,
-    timezone: input.owner.timezone,
+    timezone: owner.timezone,
     actualStoryCount: stories.length,
     attemptCount: Number(delivery.attempt_count),
     stories: stories.map((story) => {

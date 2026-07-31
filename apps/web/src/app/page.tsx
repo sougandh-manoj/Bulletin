@@ -7,7 +7,6 @@ import {
   PRODUCT,
   PUBLIC_ROUTES,
 } from "@/config/product";
-import { hasDeliveredBriefing } from "@/data/delivery";
 import { getAuthenticatedBulletinSubscriber } from "@/lib/security/authenticated-subscriber";
 
 import { LandingNavigation } from "./landing-navigation";
@@ -84,16 +83,14 @@ function SourceMark() {
 export default async function Home() {
   const authenticated = await getAuthenticatedBulletinSubscriber();
   const subscriber = authenticated?.subscriber;
-  const hasBriefing = subscriber
-    ? await hasDeliveredBriefing({ subscriberId: subscriber.subscriberId })
-    : null;
+  const hasBriefing = Boolean(subscriber);
   const signedIn = Boolean(authenticated);
 
   return (
     <div className={styles.page} data-scroll-reveal-root>
       <LandingScrollReveal />
       
-      <LandingNavigation signedIn={signedIn} hasBriefing={Boolean(hasBriefing)} />
+      <LandingNavigation signedIn={signedIn} hasBriefing={hasBriefing} />
 
       <main id="main-content">
         <section className={styles.hero} aria-labelledby="hero-title">

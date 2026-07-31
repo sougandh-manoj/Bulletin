@@ -1331,10 +1331,10 @@
 
 .manageAddButton {
   min-width: 78px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--blue);
   border-radius: 6px;
-  background: transparent;
-  color: var(--ink);
+  background: var(--blue);
+  color: #fff;
   padding: 10px 16px;
   cursor: pointer;
   font: inherit;
@@ -1344,12 +1344,12 @@
 }
 
 .manageAddButton:hover:not(:disabled) {
-  border-color: var(--ink-soft);
-  background: var(--surface);
+  border-color: var(--blue-dark);
+  background: var(--blue-dark);
 }
 
 .manageAddButton:disabled {
-  color: var(--ink-faint);
+  color: rgba(255, 255, 255, 0.68);
   cursor: not-allowed;
 }
 
@@ -1874,20 +1874,7 @@
     width: 112px;
     min-height: 44px;
     justify-self: end;
-    border-color: var(--blue);
     border-radius: 12px;
-    background: var(--blue);
-    color: #fff;
-  }
-
-  .manageAddButton:hover:not(:disabled) {
-    border-color: var(--blue-dark);
-    background: var(--blue-dark);
-  }
-
-  .manageAddButton:disabled {
-    color: rgba(255, 255, 255, 0.68);
-    opacity: 1;
   }
 
   .manageStoryControl {

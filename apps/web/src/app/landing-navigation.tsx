@@ -75,13 +75,14 @@ export function LandingNavigation({ signedIn = false }: { signedIn?: boolean }) 
   return (
     <header className={styles.siteHeader}>
       <div className={styles.headerInner}>
-        <Link
-          className={styles.wordmark}
-          href={PUBLIC_ROUTES.home}
-          aria-label={`${PRODUCT.name} home`}
-        >
-          {PRODUCT.name}
-        </Link>
+        <h1 className={styles.wordmark}>
+          <Link
+            href={PUBLIC_ROUTES.home}
+            aria-label={`${PRODUCT.name} home`}
+          >
+            {PRODUCT.name}
+          </Link>
+        </h1>
 
         <nav className={styles.desktopNavigation} aria-label="Primary navigation">
           {NAVIGATION_ITEMS.map((item) => (

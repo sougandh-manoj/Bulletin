@@ -93,8 +93,10 @@ export default async function Home() {
         <section className={styles.hero} aria-labelledby="hero-title">
           <div className={styles.heroGrid}>
             <div className={styles.heroCopy} data-reveal-hero>
-              <p className={styles.eyebrow}>Bulletin · Personal email news briefing</p>
-              <h1 id="hero-title">{PRODUCT.landing.title}</h1>
+              <p className={styles.eyebrow}>Bulletin · Personal news briefing</p>
+              <h2 className={styles.heroTitle} id="hero-title">
+                {PRODUCT.landing.title}
+              </h2>
               <p className={`${styles.heroLede} ${styles.desktopCopy}`}>
                 Bulletin is a personalised email news briefing shaped around your
                 interests, location, language, and schedule. It delivers a finite

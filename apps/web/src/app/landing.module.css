@@ -91,6 +91,7 @@
 .wordmark,
 .footerWordmark {
   flex: 0 0 auto;
+  margin: 0;
   font-family: var(--landing-serif);
   font-size: 1.55rem;
   font-weight: 700;
@@ -238,7 +239,7 @@
   content: "";
 }
 
-.hero h1 {
+.heroTitle {
   max-width: 630px;
   margin: 22px 0 26px;
   font-family: var(--landing-serif);
@@ -1080,7 +1081,7 @@
     gap: 26px;
   }
 
-  .hero h1 {
+  .heroTitle {
     margin: 12px 0 14px;
     font-size: clamp(2.45rem, 12vw, 3.2rem);
     line-height: 0.98;

@@ -22,7 +22,7 @@ export default async function OnboardingPage() {
   const bulletin = await getAuthenticatedBulletinSubscriber();
   if (bulletin?.subscriber) {
     return (
-      <SecureShell>
+      <SecureShell showSignOut>
         <div className={secureStyles.narrow}>
           <p className={secureStyles.eyebrow}>Your Bulletin</p>
           <h1 className={secureStyles.title}>You already have a Bulletin.</h1>

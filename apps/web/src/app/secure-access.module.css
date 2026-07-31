@@ -34,6 +34,24 @@
   text-underline-offset: 4px;
 }
 
+.signOutButton {
+  min-height: 42px;
+  border: 1px solid #15191d;
+  border-radius: 12px;
+  background: transparent;
+  color: #15191d;
+  padding: 9px 16px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.signOutButton:hover {
+  background: #15191d;
+  color: #fff;
+}
+
 .main {
   width: min(1180px, calc(100% - 40px));
   flex: 1;

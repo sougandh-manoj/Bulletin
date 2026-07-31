@@ -16,7 +16,7 @@ export default async function ManagePage() {
   if (!authenticated) redirect("/sign-in?intent=manage");
   if (!authenticated.subscriber) {
     return (
-      <SecureShell linkLabel={null}>
+      <SecureShell linkLabel={null} showSignOut>
         <div className={styles.narrow}>
           <p className={styles.eyebrow}>Your Bulletin</p>
           <h1 className={styles.title}>No Bulletin found for this account.</h1>
@@ -35,7 +35,7 @@ export default async function ManagePage() {
   const subscriber = authenticated.subscriber;
 
   return (
-    <SecureShell linkLabel={null}>
+    <SecureShell linkLabel={null} showSignOut>
       <p className={styles.eyebrow}>Your Bulletin</p>
       <h1 className={styles.title}>Manage briefing.</h1>
       <ManageBriefing

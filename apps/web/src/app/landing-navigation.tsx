@@ -6,6 +6,7 @@ import type { MouseEvent } from "react";
 import { PRODUCT, PUBLIC_ROUTES } from "@/config/product";
 
 import styles from "./landing.module.css";
+import { SignOutButton } from "./sign-out-button";
 
 const NAVIGATION_ITEMS = [
   { href: "#your-briefing", label: "Your briefing" },
@@ -70,7 +71,7 @@ async function scrollToSection(
   });
 }
 
-export function LandingNavigation() {
+export function LandingNavigation({ signedIn = false }: { signedIn?: boolean }) {
   return (
     <header className={styles.siteHeader}>
       <div className={styles.headerInner}>
@@ -100,9 +101,13 @@ export function LandingNavigation() {
           <Link className={styles.manageLink} href={PUBLIC_ROUTES.manageAccess}>
             Manage briefing
           </Link>
-          <Link className={styles.headerCta} href={PUBLIC_ROUTES.onboarding}>
-            Create my briefing
-          </Link>
+          {signedIn ? (
+            <SignOutButton className={styles.signOutButton} />
+          ) : (
+            <Link className={styles.headerCta} href={PUBLIC_ROUTES.onboarding}>
+              Create my briefing
+            </Link>
+          )}
         </div>
       </div>
     </header>

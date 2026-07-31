@@ -7,6 +7,7 @@ import {
   PRODUCT,
   PUBLIC_ROUTES,
 } from "@/config/product";
+import { getSupabaseAuthUser } from "@/lib/supabase/auth";
 
 import { LandingNavigation } from "./landing-navigation";
 import { LandingScrollReveal } from "./landing-scroll-reveal";
@@ -31,6 +32,7 @@ export const metadata: Metadata = {
     description: PRODUCT.landing.description,
   },
 };
+export const dynamic = "force-dynamic";
 
 const interestCategories = [
   "india",
@@ -78,12 +80,14 @@ function SourceMark() {
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  const signedIn = Boolean(await getSupabaseAuthUser());
+
   return (
     <div className={styles.page} data-scroll-reveal-root>
       <LandingScrollReveal />
       
-      <LandingNavigation />
+      <LandingNavigation signedIn={signedIn} />
 
       <main id="main-content">
         <section className={styles.hero} aria-labelledby="hero-title">

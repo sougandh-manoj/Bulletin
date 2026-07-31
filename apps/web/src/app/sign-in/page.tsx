@@ -67,6 +67,11 @@ export default async function SignInPage({
               could not be prepared. Try again in a moment.
             </p>
           )}
+          {state === "logout-failed" && (
+            <p className={styles.status}>
+              You could not be logged out. Try again in a moment.
+            </p>
+          )}
           <div className={styles.authActions}>
             <Link
               className={`${styles.providerButton} ${styles.googleButton}`}

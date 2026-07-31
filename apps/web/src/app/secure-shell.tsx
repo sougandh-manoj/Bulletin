@@ -3,15 +3,18 @@ import Link from "next/link";
 import { PRODUCT } from "@/config/product";
 
 import styles from "./secure-access.module.css";
+import { SignOutButton } from "./sign-out-button";
 
 export function SecureShell({
   children,
   linkHref = "/",
   linkLabel = "Back to home",
+  showSignOut = false,
 }: {
   children: React.ReactNode;
   linkHref?: string;
   linkLabel?: string | null;
+  showSignOut?: boolean;
 }) {
   return (
     <div className={styles.shell}>
@@ -19,7 +22,9 @@ export function SecureShell({
         <Link className={styles.masthead} href="/" aria-label={`${PRODUCT.name} home`}>
           {PRODUCT.name}
         </Link>
-        {linkLabel && (
+        {showSignOut ? (
+          <SignOutButton className={styles.signOutButton} />
+        ) : linkLabel && (
           <Link className={styles.headerLink} href={linkHref}>
             {linkLabel}
           </Link>

@@ -1,5 +1,7 @@
 .shell {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background:
     radial-gradient(circle at 86% 8%, rgba(49, 95, 145, 0.09), transparent 26rem),
     #f6f3ec;
@@ -34,6 +36,7 @@
 
 .main {
   width: min(1180px, calc(100% - 40px));
+  flex: 1;
   margin: 0 auto;
   padding: 64px 0 92px;
 }

@@ -181,7 +181,7 @@
 
 .signInActions {
   width: min(100%, 520px);
-  margin: 38px auto 0;
+  margin: 52px auto 0;
 }
 
 .standaloneAction {
@@ -1798,6 +1798,10 @@
 
   .main {
     padding: 46px 0 68px;
+  }
+
+  .signInActions {
+    margin-top: 38px;
   }
 
   .header {

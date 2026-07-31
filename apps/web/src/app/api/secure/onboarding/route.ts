@@ -1,13 +1,9 @@
-import { createPendingSubscriber, findSubscriberForManagement } from "@/data/subscribers";
+import { createAuthenticatedSubscriber } from "@/data/subscribers";
 import { createLogger } from "@/lib/logging/logger";
-import { invalidRequest, privateJson, rateLimited, unavailable } from "@/lib/security/api";
-import { enforceRateLimit } from "@/lib/security/rate-limit";
+import { invalidRequest, privateJson, unavailable } from "@/lib/security/api";
+import { getAuthenticatedAuthUser } from "@/lib/security/authenticated-subscriber";
 import { readJsonBody } from "@/lib/security/request";
 import { subscriberPreferencesSchema } from "@/lib/validation/subscriber";
-import {
-  issueManagementEmail,
-  issueVerificationEmailForSubscriber,
-} from "@/services/access";
 
 export const runtime = "nodejs";
 const logger = createLogger("onboarding-submit");
@@ -21,37 +17,39 @@ export async function POST(request: Request) {
       return invalidRequest("Review every choice before generating your briefing.");
     }
 
-    const allowed = await enforceRateLimit({
-      request,
-      scope: "verification-request",
-      discriminator: parsed.data.email,
-      limit: 4,
-      windowSeconds: 60 * 60,
-    });
-    if (!allowed) return rateLimited();
-
-    const result = await createPendingSubscriber(parsed.data);
-
-    if (result.outcome === "existing-verified") {
-      const subscriber = await findSubscriberForManagement(result.subscriber_id);
-      if (!subscriber) return unavailable();
-      await issueManagementEmail({
-        email: parsed.data.email,
-        publicReference: subscriber.public_reference,
-        tokenVersion: subscriber.token_version,
-      });
-      logger.info("Onboarding protected an existing verified subscriber");
-      return privateJson({ ok: true, state: "verified", emailSent: true });
+    const authenticated = await getAuthenticatedAuthUser();
+    if (!authenticated) {
+      return privateJson(
+        { ok: false, message: "Sign in before creating your briefing." },
+        { status: 401 },
+      );
     }
 
-    await issueVerificationEmailForSubscriber({
-      subscriberId: result.subscriber_id,
-      email: parsed.data.email,
+    if (parsed.data.email !== authenticated.email) {
+      return privateJson(
+        { ok: false, message: "Use the email from your signed-in account." },
+        { status: 403 },
+      );
+    }
+
+    const result = await createAuthenticatedSubscriber({
+      authUserId: authenticated.user.id,
+      preferences: parsed.data,
     });
-    logger.info("Pending subscriber verification issued", {
+    if (result.outcome === "email-claimed") {
+      return privateJson(
+        { ok: false, state: "email-claimed", message: "This email is already connected to another Bulletin account." },
+        { status: 409 },
+      );
+    }
+    logger.info("Authenticated subscriber onboarding completed", {
       outcome: result.outcome,
     });
-    return privateJson({ ok: true, state: "pending", emailSent: true });
+    return privateJson({
+      ok: true,
+      state: result.outcome,
+      nextDeliveryAt: result.next_delivery_at,
+    });
   } catch (error) {
     if (error instanceof SyntaxError) return invalidRequest();
     logger.error("Onboarding submission failed", { error });

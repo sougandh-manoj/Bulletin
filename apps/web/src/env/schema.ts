@@ -7,7 +7,6 @@ export const serverEnvironmentSchema = z.object({
   SUPABASE_URL: z.string().url().optional(),
   SUPABASE_ANON_KEY: z.string().min(1).optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
-  MANAGEMENT_LINK_SIGNING_SECRET: z.string().min(32).optional(),
   SESSION_SIGNING_SECRET: z.string().min(32).optional(),
   EMAIL_TRANSPORT: z.enum(["test", "smtp"]).default("test"),
   GEMINI_API_KEY: z.string().min(1).optional(),

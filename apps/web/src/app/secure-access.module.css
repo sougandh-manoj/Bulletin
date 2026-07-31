@@ -171,6 +171,59 @@
   color: #fff;
 }
 
+.authActions {
+  display: grid;
+  gap: 12px;
+}
+
+.authActions .button,
+.authActions .secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.providerButton {
+  min-height: 48px;
+  border: 1px solid #15191d;
+  border-radius: 2px;
+  padding: 12px 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #15191d;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.providerButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.78;
+}
+
+.googleButton {
+  background: #fffefa;
+}
+
+.appleButton {
+  background: #15191d;
+  color: #fff;
+}
+
+.comingSoon {
+  margin-left: 10px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 11px;
+  font-weight: 300;
+}
+
+.providerButton:focus-visible {
+  outline: 3px solid rgba(49, 95, 145, 0.32);
+  outline-offset: 3px;
+}
+
 .unsubscribeButton {
   display: inline-flex;
   align-items: center;

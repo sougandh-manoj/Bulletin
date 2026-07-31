@@ -2,16 +2,16 @@
 
 Names and purposes only. Never add values to this file.
 
-## Vercel server-only environment
+## Vercel environment
 
 | Name | Purpose |
 |---|---|
 | `APP_ENV` | Must be `production` |
 | `APP_BASE_URL` | Canonical HTTPS origin |
 | `SUPABASE_URL` | Production Data API origin |
+| `SUPABASE_ANON_KEY` | Public Supabase Auth client key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Privileged database access |
-| `MANAGEMENT_LINK_SIGNING_SECRET` | Management-link HMAC |
-| `SESSION_SIGNING_SECRET` | Subscriber/owner session binding |
+| `SESSION_SIGNING_SECRET` | Owner session binding |
 | `CRON_SHARED_SECRET` | Supabase Cron bearer authentication |
 | `OWNER_EMAIL` | Exact owner allowlist |
 | `EMAIL_TRANSPORT` | Must be `smtp` |

@@ -279,8 +279,8 @@ select public.commit_article_to_story_cluster(
 select is((select result->>'clusterStatus' from phase_7_sensitive_commit), 'open', 'one sensitive publisher family cannot verify a cluster');
 select is((select result->>'evidenceStrength' from phase_7_sensitive_commit), 'weak', 'uncorroborated sensitive evidence remains weak');
 select is((select count(*)::integer from public.cluster_summaries where cluster_id = (select (result->>'clusterId')::uuid from phase_7_sensitive_commit)), 0, 'uncorroborated sensitive cluster queues no summary');
-select is((select count(*)::integer from information_schema.tables where table_schema = 'public'), 23, 'later operational tables remain server-only public-schema tables');
-select is((select count(*)::integer from pg_catalog.pg_policies where schemaname = 'public' and roles = array['service_role']::name[]), 23, 'every current table retains one forced-RLS service-role policy');
+select is((select count(*)::integer from information_schema.tables where table_schema = 'public'), 21, 'later operational tables remain server-only public-schema tables');
+select is((select count(*)::integer from pg_catalog.pg_policies where schemaname = 'public' and roles = array['service_role']::name[]), 21, 'every current table retains one forced-RLS service-role policy');
 
 select * from finish();
 rollback;

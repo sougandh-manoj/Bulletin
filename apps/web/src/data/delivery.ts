@@ -32,8 +32,6 @@ export type DeliveryRenderContext = {
   subscriberId: string;
   recipient: string;
   subscriberName: string;
-  subscriberPublicReference: string;
-  subscriberTokenVersion: number;
   scheduledFor: string;
   preferenceVersion: number;
   language: SupportedLanguage;

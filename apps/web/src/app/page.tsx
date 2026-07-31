@@ -258,10 +258,10 @@ export default function Home() {
               <p className={styles.eyebrow}>Appearance</p>
               <h2 id="appearance-title">A briefing that feels right to read.</h2>
               <p className={styles.desktopCopy}>
-                Choose an appearance after confirming your email, then change it
+                Choose an appearance while creating your briefing, then change it
                 whenever you like from Manage briefing.
               </p>
-              <p className={styles.mobileCopy}>Choose the look after email confirmation.</p>
+              <p className={styles.mobileCopy}>Choose the look while creating your briefing.</p>
             </div>
 
             <div className={styles.themeGrid} data-reveal-group>

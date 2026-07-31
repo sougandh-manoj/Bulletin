@@ -31,7 +31,7 @@ const sample = {
       sources: [{ name: "Science Review" }],
     },
   ],
-  manageUrl: "https://bulletin.example/manage/access",
+  manageUrl: "https://bulletin.example/manage",
 } as const;
 
 describe("Midnight Brief email", () => {

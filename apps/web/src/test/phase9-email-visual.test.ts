@@ -19,7 +19,7 @@ describe.skipIf(!enabled)("Phase 9 email visual fixtures", () => {
         scheduledFor: "2026-07-12T02:30:00Z",
         timezone: "Asia/Kolkata",
         subscriberName: "Visual QA Reader",
-        manageUrl: "https://bulletin.example/access/manage?r=00000000-0000-4000-8000-000000000001&v=1&e=1999999999&s=visual-qa-signature",
+        manageUrl: "https://bulletin.example/manage",
         stories: [
           { position: 1, category: "technology-ai", headline: "India opens a shared AI research platform", summary: "A verified public research platform has opened to participating institutions. The first release provides shared compute and evaluated datasets. Access begins with a bounded group of public-interest projects.", whyItMatters: "Shared infrastructure can widen access to expensive research capacity.", isUpdate: true, sources: [{ name: "Public Science Desk", url: "https://publisher.example/ai" }] },
           { position: 2, category: "climate", headline: "Cities publish a common heat-response protocol", summary: "Participating cities published a common protocol for high-heat days. It defines public warnings, cooling access and health escalation steps. Local agencies retain responsibility for activation.", whyItMatters: "A shared protocol makes local emergency action easier to compare and improve.", isUpdate: false, sources: [{ name: "Climate Reporter", url: "https://climate.example/original" }] },

@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions, pg_catalog;
-select plan(61);
+select plan(43);
 
 update public.system_controls set
   email_delivery_enabled = true,
@@ -47,12 +47,12 @@ select is(
   (select count(*)::integer from information_schema.tables
    where table_schema = 'public' and table_name in (
      'subscribers', 'subscriber_preferences', 'subscriber_schedules', 'preference_versions',
-     'email_verification_tokens', 'subscriber_sessions', 'admin_access_tokens', 'admin_sessions',
+     'admin_access_tokens', 'admin_sessions',
      'rate_limit_buckets', 'sources', 'articles', 'story_clusters', 'story_cluster_articles',
      'cluster_summaries', 'cluster_summary_articles', 'deliveries', 'delivery_stories',
      'admin_audit_log', 'alert_events', 'worker_heartbeats'
    )),
-  20,
+  18,
   'all Phase 2 tables exist'
 );
 
@@ -62,19 +62,19 @@ select is(
    where namespace.nspname = 'public' and relation.relkind = 'r'
      and relation.relname in (
        'subscribers', 'subscriber_preferences', 'subscriber_schedules', 'preference_versions',
-       'email_verification_tokens', 'subscriber_sessions', 'admin_access_tokens', 'admin_sessions',
+       'admin_access_tokens', 'admin_sessions',
        'rate_limit_buckets', 'sources', 'articles', 'story_clusters', 'story_cluster_articles',
        'cluster_summaries', 'cluster_summary_articles', 'deliveries', 'delivery_stories',
        'admin_audit_log', 'alert_events', 'worker_heartbeats'
      ) and relation.relrowsecurity and relation.relforcerowsecurity),
-  20,
+  18,
   'RLS is enabled and forced on every Phase 2 table'
 );
 
 select is(
   (select count(*)::integer from pg_catalog.pg_policies
    where schemaname = 'public' and roles = array['service_role']::name[]),
-  23,
+  21,
   'every current table has exactly one service-role policy'
 );
 
@@ -88,103 +88,30 @@ select is(
   'browser roles cannot execute database functions'
 );
 
--- Keep verification fixtures relative to one transaction-stable instant. This
--- preserves the full token lifetime without depending on the calendar date,
--- database timezone, or the wall-clock duration before this test starts.
-create temporary table verification_test_clock as
-select transaction_timestamp() as anchor_at;
-
 create temporary table created_subscriber as
-select * from public.create_pending_subscriber(
-  'reader@example.com', 'Reader', 'IN', 'Kerala', 'Kochi', 'en',
-  array['india', 'technology-ai']::public.news_category[],
-  array['space']::text[], array['celebrity gossip']::text[], 8::smallint,
-  'light-editorial', 'daily', null, '08:30'::time, 'Asia/Kolkata',
-  '2026-07-12 10:00:00+00', '2026-07-12',
-  (select anchor_at from verification_test_clock)
-);
+select gen_random_uuid() as subscriber_id;
 
-select is((select outcome from created_subscriber), 'created', 'pending subscriber is created atomically');
-select is((select count(*)::integer from public.subscribers where email = 'reader@example.com'), 1, 'email has one row');
+insert into public.subscribers (
+  id, email, name, status, verified_at, consent_at, consent_version
+)
+select subscriber_id, 'reader@example.com', 'Reader', 'active',
+       '2026-07-12 10:00:00+00', '2026-07-12 10:00:00+00', '2026-07-12'
+from created_subscriber;
 
-create temporary table duplicate_attempt as
-select * from public.create_pending_subscriber(
-  'reader@example.com', 'Attacker overwrite', 'IN', 'Delhi', null, 'hi',
-  array['politics']::public.news_category[], '{}'::text[], '{}'::text[], 4::smallint,
-  'dark-intelligence', 'weekly', 'monday', '09:00'::time, 'Asia/Kolkata',
-  '2026-07-12 10:01:00+00', 'changed', '2026-07-12 10:01:00+00'
-);
+insert into public.subscriber_preferences (
+  subscriber_id, country_code, state_region, city, language, categories,
+  custom_topics, excluded_topics, story_count, theme
+)
+select subscriber_id, 'IN', 'Kerala', 'Kochi', 'en',
+       array['india', 'technology-ai']::public.news_category[],
+       array['space']::text[], array['celebrity gossip']::text[], 8, 'light-editorial'
+from created_subscriber;
 
-select is((select outcome from duplicate_attempt), 'existing-pending', 'duplicate signup returns existing state');
-select is((select name from public.subscribers where email = 'reader@example.com'), 'Reader', 'duplicate signup does not overwrite identity');
-select is(
-  (select story_count::integer from public.subscriber_preferences
-   where subscriber_id = (select subscriber_id from created_subscriber)),
-  8,
-  'duplicate signup does not overwrite preferences'
-);
-
-select lives_ok(
-  format(
-    'select * from public.issue_verification_token(%L::uuid, digest(''token-one'', ''sha256''), %L::timestamptz)',
-    (select subscriber_id from created_subscriber),
-    (select anchor_at + interval '1 second' from verification_test_clock)
-  ),
-  'first verification token is issued'
-);
-select lives_ok(
-  format(
-    'select * from public.issue_verification_token(%L::uuid, digest(''token-two'', ''sha256''), %L::timestamptz)',
-    (select subscriber_id from created_subscriber),
-    (select anchor_at + interval '2 seconds' from verification_test_clock)
-  ),
-  'new verification token atomically supersedes the old token'
-);
-select is(
-  (select count(*)::integer from public.email_verification_tokens
-   where subscriber_id = (select subscriber_id from created_subscriber) and status = 'active'),
-  1,
-  'only one verification token remains active'
-);
-select is(
-  (select status::text from public.email_verification_tokens where token_hash = digest('token-one', 'sha256')),
-  'invalidated',
-  'older verification token is invalidated'
-);
-select ok(
-  (select expires_at > statement_timestamp() + interval '23 hours'
-   from public.email_verification_tokens
-   where token_hash = digest('token-two', 'sha256')),
-  'active verification token is safely unexpired relative to test execution'
-);
-select ok(
-  (select is_valid from public.inspect_verification_token(
-    digest('token-two', 'sha256'), statement_timestamp()
-  )),
-  'scanner-safe token inspection reports validity'
-);
-select is(
-  (select status::text from public.email_verification_tokens where token_hash = digest('token-two', 'sha256')),
-  'active',
-  'inspection GET primitive does not consume the token'
-);
-
-select lives_ok(
-  $$select * from public.consume_verification_token(digest('token-two', 'sha256'), statement_timestamp())$$,
-  'deliberate verification consumes token and activates delivery'
-);
-select is(
-  (select status::text from public.subscribers where id = (select subscriber_id from created_subscriber)),
-  'active',
-  'verified subscriber is active'
-);
-select ok(
-  (select schedule.next_delivery_at > subscriber.verified_at
-   from public.subscriber_schedules as schedule
-   join public.subscribers as subscriber on subscriber.id = schedule.subscriber_id
-   where schedule.subscriber_id = (select subscriber_id from created_subscriber)),
-  'verification calculates a future UTC delivery'
-);
+insert into public.subscriber_schedules (
+  subscriber_id, frequency, local_delivery_time, timezone, next_delivery_at
+)
+select subscriber_id, 'daily', '08:30'::time, 'Asia/Kolkata', '2026-07-13 03:00:00+00'
+from created_subscriber;
 
 select is(
   public.save_subscriber_preferences(
@@ -316,59 +243,12 @@ select ok(
   'deletion audit remains non-identifying'
 );
 
--- Expiry is tested independently from supersession and consumption. The token
--- is issued from the same stable anchor, then evaluated well past its 24-hour
--- lifetime while the pending subscriber itself is still eligible.
-create temporary table expired_token_subscriber as
-select * from public.create_pending_subscriber(
-  'expired-token@example.com', 'Expired Token', 'IN', 'Kerala', null, 'en',
-  array['india']::public.news_category[], '{}'::text[], '{}'::text[], 4::smallint,
-  'light-editorial', 'daily', null, '08:30'::time, 'Asia/Kolkata',
-  '2026-07-12 10:00:00+00', '2026-07-12',
-  (select anchor_at from verification_test_clock)
-);
-create temporary table expired_token_issued as
-select * from public.issue_verification_token(
-  (select subscriber_id from expired_token_subscriber),
-  digest('expired-token', 'sha256'),
-  (select anchor_at from verification_test_clock)
-);
-
-select is(
-  (select is_valid from public.inspect_verification_token(
-    digest('expired-token', 'sha256'),
-    (select anchor_at + interval '25 hours' from verification_test_clock)
-  )),
-  false,
-  'expired verification token inspection fails closed'
-);
-select throws_ok(
-  format(
-    'select * from public.consume_verification_token(digest(''expired-token'', ''sha256''), %L::timestamptz)',
-    (select anchor_at + interval '25 hours' from verification_test_clock)
-  ),
-  '22023',
-  'expired or superseded verification token',
-  'expired verification token cannot be consumed'
-);
-
-insert into public.subscribers (
-  email, name, consent_at, consent_version, unverified_expires_at
-) values (
-  'expired@example.com', 'Expired', '2026-06-01', '2026-07-12', '2026-06-08'
-);
-select ok(
-  ((public.apply_retention('2026-07-12 12:00:00+00', 100))->>'unverifiedSubscribers')::integer = 1,
-  'retention cleanup removes expired unverified subscribers in a bounded batch'
-);
-
 -- Launch-shape scheduler pressure: 100 subscribers become due together.
 insert into public.subscribers (
-  id, email, name, status, verified_at, consent_at, consent_version, unverified_expires_at
+  id, email, name, status, verified_at, consent_at, consent_version
 )
 select gen_random_uuid(), 'bulk-' || value || '@example.com', 'Bulk ' || value, 'active',
-       '2026-07-12 09:00:00+00', '2026-07-01 09:00:00+00', '2026-07-12',
-       '2026-07-08 09:00:00+00'
+       '2026-07-12 09:00:00+00', '2026-07-01 09:00:00+00', '2026-07-12'
 from generate_series(1, 100) as value;
 
 insert into public.subscriber_preferences (
@@ -480,10 +360,10 @@ select ok(
 create temporary table update_stress_subscriber as
 select gen_random_uuid() as id;
 insert into public.subscribers (
-  id, email, name, status, verified_at, consent_at, consent_version, unverified_expires_at
+  id, email, name, status, verified_at, consent_at, consent_version
 )
 select id, 'updates@example.com', 'Update Stress', 'active', '2026-07-12 09:00:00+00',
-       '2026-07-01 09:00:00+00', '2026-07-12', '2026-07-08 09:00:00+00'
+       '2026-07-01 09:00:00+00', '2026-07-12'
 from update_stress_subscriber;
 insert into public.subscriber_preferences (
   subscriber_id, country_code, state_region, language, categories, story_count, theme

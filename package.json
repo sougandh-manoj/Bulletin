@@ -11,8 +11,6 @@
     "lint": "npm run lint --workspace @bulletin/web",
     "typecheck": "npm run typecheck --workspace @bulletin/web",
     "test": "npm run test --workspace @bulletin/web",
-    "test:phase4:integration": "node apps/web/scripts/phase4-local-integration.mjs",
-    "test:phase4:browser-fixture": "node apps/web/scripts/phase4-browser-fixture.mjs",
     "test:phase7:integration": "RUN_PHASE7_LOCAL_INTELLIGENCE=1 npm run test --workspace @bulletin/web -- --run src/test/phase7-local-intelligence.test.ts",
     "test:phase8:integration": "RUN_PHASE8_LOCAL_PERSONALIZATION=1 npm run test --workspace @bulletin/web -- --run src/test/phase8-local-personalization.test.ts",
     "test:phase9:integration": "RUN_PHASE9_LOCAL_DELIVERY=1 node --env-file=apps/web/.env.local node_modules/vitest/vitest.mjs run --root apps/web --config vitest.config.ts src/test/phase9-local-delivery.test.ts",

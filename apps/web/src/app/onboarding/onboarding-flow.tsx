@@ -56,8 +56,6 @@ const THEME_TONE_LABELS = {
   "amber-brief": "Bright and warm",
 } as const;
 
-type EmailCheckState = "idle" | "checking" | "existing" | "pending";
-type ResendState = "idle" | "sending" | "success" | "error";
 type TimePeriod = "AM" | "PM";
 type TimePart = "hour" | "minute" | "period";
 
@@ -720,7 +718,13 @@ function TagInput({
   );
 }
 
-export default function OnboardingFlow() {
+export default function OnboardingFlow({
+  authenticatedEmail,
+  defaultName,
+}: {
+  authenticatedEmail: string;
+  defaultName?: unknown;
+}) {
   const countries = useMemo(() => getCountryOptions(), []);
   const timezones = useMemo(() => getTimezoneOptions(), []);
   const [step, setStep] = useState(1);
@@ -730,12 +734,9 @@ export default function OnboardingFlow() {
   const [countryQuery, setCountryQuery] = useState("🇮🇳 India");
   const [errors, setErrors] = useState<FieldErrors>({});
   const [hydrated, setHydrated] = useState(false);
-  const [emailState, setEmailState] = useState<EmailCheckState>("idle");
   const [submitting, setSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState<string>();
   const [complete, setComplete] = useState(false);
-  const [completedEmail, setCompletedEmail] = useState("");
-  const [resendState, setResendState] = useState<ResendState>("idle");
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -745,6 +746,7 @@ export default function OnboardingFlow() {
       if (saved) {
         const restoredDraft = {
           ...saved.draft,
+          email: authenticatedEmail,
           timezone:
             saved.draft.timezone === "Asia/Calcutta"
               ? "Asia/Kolkata"
@@ -758,12 +760,9 @@ export default function OnboardingFlow() {
         if (selected) setCountryQuery(selected.label);
       } else {
         const initialDraft = createInitialDraft(detectedTimezone);
-        const prefilledEmail = sessionStorage.getItem(
-          "bulletin:onboarding-prefill-email",
-        );
-        if (prefilledEmail) {
-          initialDraft.email = prefilledEmail;
-          sessionStorage.removeItem("bulletin:onboarding-prefill-email");
+        initialDraft.email = authenticatedEmail;
+        if (typeof defaultName === "string" && defaultName.trim()) {
+          initialDraft.name = defaultName.trim().slice(0, 100);
         }
         setDraft(initialDraft);
       }
@@ -771,7 +770,7 @@ export default function OnboardingFlow() {
     });
 
     return () => window.cancelAnimationFrame(frame);
-  }, [countries]);
+  }, [authenticatedEmail, countries, defaultName]);
 
   useEffect(() => {
     if (!hydrated || complete) return;
@@ -779,7 +778,7 @@ export default function OnboardingFlow() {
   }, [complete, draft, hydrated, step]);
 
   useEffect(() => {
-    if (step !== 1 || emailState !== "idle") return;
+    if (step !== 1) return;
     if (!draft.name.trim() && !draft.email.trim()) return;
 
     const timer = window.setTimeout(() => {
@@ -802,7 +801,7 @@ export default function OnboardingFlow() {
     }, 650);
 
     return () => window.clearTimeout(timer);
-  }, [draft, emailState, step]);
+  }, [draft, step]);
 
   const content = STEP_CONTENT[step - 1];
   const progress = (step / 5) * 100;
@@ -819,7 +818,6 @@ export default function OnboardingFlow() {
       return next;
     });
     setSubmissionError(undefined);
-    if (field === "email") setEmailState("idle");
   };
 
   const setFieldError = (field: keyof OnboardingDraft, message?: string) => {
@@ -836,14 +834,6 @@ export default function OnboardingFlow() {
     setFieldError(field, message);
   };
 
-  const validateEnteredEmail = () => {
-    if (!draft.email.trim()) {
-      setFieldError("email");
-      return;
-    }
-    validateField("email");
-  };
-
   const focusFirstError = (nextErrors: FieldErrors) => {
     const field = firstErrorField(nextErrors);
     if (!field) return;
@@ -855,7 +845,6 @@ export default function OnboardingFlow() {
   const moveToStep = (nextStep: number) => {
     setStep(nextStep);
     setErrors({});
-    setEmailState("idle");
     setSubmissionError(undefined);
     window.requestAnimationFrame(() => {
       headingRef.current?.focus();
@@ -863,50 +852,9 @@ export default function OnboardingFlow() {
     });
   };
 
-  const runEmailCheck = async () => {
-    setEmailState("checking");
-    const email = draft.email.trim().toLowerCase();
-    setSubmissionError(undefined);
-    try {
-      const response = await fetch("/api/secure/email/check", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const result = await response.json() as {
-        ok?: boolean;
-        state?: "new" | "expired" | "verified" | "pending";
-        emailSent?: boolean;
-        message?: string;
-      };
-      if (!response.ok || !result.ok) {
-        setEmailState("idle");
-        setSubmissionError(
-          result.message ?? "We couldn’t check this address securely. Please try again.",
-        );
-        return;
-      }
-      if (result.state === "verified" && result.emailSent) {
-        setEmailState("existing");
-        return;
-      }
-      if (result.state === "pending" && result.emailSent) {
-        setEmailState("pending");
-        return;
-      }
-      setEmailState("idle");
-      moveToStep(2);
-    } catch {
-      setEmailState("idle");
-      setSubmissionError(
-        "We couldn’t check this address securely. Please try again.",
-      );
-    }
-  };
-
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (submitting || emailState === "checking") return;
+    if (submitting) return;
 
     const stepErrors = validateStep(step, draft);
     if (Object.keys(stepErrors).length > 0) {
@@ -916,7 +864,7 @@ export default function OnboardingFlow() {
     }
 
     if (step === 1) {
-      await runEmailCheck();
+      moveToStep(2);
       return;
     }
 
@@ -942,26 +890,29 @@ export default function OnboardingFlow() {
       });
       const result = await response.json() as {
         ok?: boolean;
-        emailSent?: boolean;
+        state?: "created" | "existing" | "email-claimed";
+        nextDeliveryAt?: string | null;
         message?: string;
       };
-      if (!response.ok || !result.ok || !result.emailSent) {
+      if (!response.ok || !result.ok) {
         setSubmissionError(
-          result.message ?? "We couldn’t send the confirmation email just now. Your choices are saved here. Please try again.",
+          result.message ?? "We couldn’t create your briefing just now. Your choices are saved here. Please try again.",
         );
         return;
       }
+      if (result.state === "existing") {
+        setSubmissionError("You already have a Bulletin. Manage your existing briefing instead.");
+        return;
+      }
 
-      setCompletedEmail(completeDraft.data.email);
       sessionStorage.removeItem(ONBOARDING_DRAFT_KEY);
       setComplete(true);
-      setResendState("idle");
       window.requestAnimationFrame(() => {
         window.scrollTo({ top: 0, behavior: "auto" });
       });
     } catch {
       setSubmissionError(
-        "We couldn’t send the confirmation email just now. Your choices are saved here. Please try again.",
+        "We couldn’t create your briefing just now. Your choices are saved here. Please try again.",
       );
     } finally {
       setSubmitting(false);
@@ -1014,33 +965,15 @@ export default function OnboardingFlow() {
     return `Your Bulletin will arrive ${cadence} at ${time} in ${draft.timezone}.`;
   }, [draft.deliveryTime, draft.frequency, draft.timezone, draft.weeklyDay]);
 
-  const resend = async () => {
-    if (resendState === "sending") return;
-    setResendState("sending");
-    try {
-      const response = await fetch("/api/secure/verification/resend", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: completedEmail }),
-      });
-      const result = await response.json() as { ok?: boolean; emailSent?: boolean };
-      setResendState(response.ok && result.ok && result.emailSent ? "success" : "error");
-    } catch {
-      setResendState("error");
-    }
-  };
-
   const startAgain = () => {
     const timezone = detectTimezone();
     const nextDraft = createInitialDraft(timezone);
+    nextDraft.email = authenticatedEmail;
     setDraft(nextDraft);
     setCountryQuery("🇮🇳 India");
     setStep(1);
     setErrors({});
-    setEmailState("idle");
     setComplete(false);
-    setCompletedEmail("");
-    setResendState("idle");
     setSubmissionError(undefined);
     sessionStorage.removeItem(ONBOARDING_DRAFT_KEY);
   };
@@ -1084,43 +1017,21 @@ export default function OnboardingFlow() {
             <div className={styles.successMark} aria-hidden="true">
               <span />
             </div>
-            <p className={styles.eyebrow}>One last step</p>
-            <h1 id="success-heading">Check your inbox.</h1>
+            <p className={styles.eyebrow}>Your Bulletin</p>
+            <h1 id="success-heading">Your briefing is ready.</h1>
             <p className={styles.successLede}>
-              A secure email was sent to <strong>{completedEmail}</strong>. Open the
-              newest link, then use the deliberate confirmation button to activate
-              delivery.
+              Delivery is active for <strong>{authenticatedEmail}</strong>. You can
+              manage your preferences whenever you like.
             </p>
 
             <div className={styles.successActions}>
-              <button
-                type="button"
-                className={styles.secondaryButton}
-                onClick={resend}
-                disabled={resendState === "sending"}
-              >
-                {resendState === "sending" ? (
-                  <><span className={styles.spinner} aria-hidden="true" /> Preparing…</>
-                ) : (
-                  "Resend email"
-                )}
-              </button>
+              <Link className={styles.secondaryButton} href="/manage">
+                Manage briefing
+              </Link>
               <button type="button" className={styles.textButton} onClick={startAgain}>
-                Use a different email
+                Start over
               </button>
             </div>
-
-            <div className={styles.resendStatus} aria-live="polite">
-              {resendState === "success" && (
-                <p>A fresh email was sent. Every older active verification link is now invalid.</p>
-              )}
-              {resendState === "error" && (
-                <p className={styles.errorText}>
-                  The preview resend could not be prepared. Try again in a moment.
-                </p>
-              )}
-            </div>
-            <p className={styles.expiryNote}>Verification links expire after 24 hours.</p>
           </section>
         ) : (
           <div className={styles.editorialGrid}>
@@ -1172,44 +1083,13 @@ export default function OnboardingFlow() {
                         autoCapitalize="none"
                         spellCheck={false}
                         value={draft.email}
-                        onChange={(event) => updateDraft("email", event.target.value)}
-                        onBlur={validateEnteredEmail}
+                        readOnly
                         aria-invalid={Boolean(errors.email)}
                         aria-describedby={errors.email ? "email-error" : undefined}
                         maxLength={255}
-                        placeholder="you@example.com"
                       />
                       <InlineError id="email-error" message={errors.email} />
                     </div>
-
-                    {emailState === "checking" && (
-                      <div className={styles.checkingState} role="status">
-                        <span className={styles.spinner} aria-hidden="true" />
-                        <div>
-                          <strong>Checking your email address</strong>
-                          <p>Making sure your saved choices stay protected.</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {(emailState === "existing" || emailState === "pending") && (
-                      <div className={styles.accountState} role="status">
-                        <span className={styles.accountRule} aria-hidden="true" />
-                        <div>
-                          <strong>
-                            {emailState === "existing"
-                              ? "An existing Bulletin was found for this email."
-                              : "You’re already signed up."}
-                          </strong>
-                          <p>
-                            {emailState === "existing"
-                              ? "Your private preferences were not shown or changed. A fresh secure management email has been sent."
-                              : "Continue with the newest confirmation link we sent to your email."}
-                          </p>
-                          <small>Use only the newest email. Links are short-lived.</small>
-                        </div>
-                      </div>
-                    )}
 
                     {submissionError && (
                       <div className={styles.submissionError} role="alert">
@@ -1707,10 +1587,10 @@ export default function OnboardingFlow() {
                 <button
                   type="submit"
                   className={styles.primaryButton}
-                  disabled={submitting || emailState === "checking"}
+                  disabled={submitting}
                 >
-                  {submitting || emailState === "checking" ? (
-                    <><span className={styles.spinnerLight} aria-hidden="true" /> {submitting ? "Preparing…" : "Checking…"}</>
+                  {submitting ? (
+                    <><span className={styles.spinnerLight} aria-hidden="true" /> Preparing…</>
                   ) : step === 5 ? (
                     "Generate my briefing"
                   ) : (

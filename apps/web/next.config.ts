@@ -10,11 +10,6 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: workspaceRoot,
   },
-  logging: {
-    incomingRequests: {
-      ignore: [/\/access\/(?:verify|manage)(?:\?|$)/],
-    },
-  },
   async headers() {
     const securityHeaders = [
       { key: "Content-Security-Policy", value: "base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'" },
@@ -35,10 +30,10 @@ const nextConfig: NextConfig = {
 
     return [
       { source: "/:path*", headers: securityHeaders },
-      { source: "/verify", headers: privateHeaders },
-      { source: "/confirmed", headers: privateHeaders },
+      { source: "/sign-in", headers: privateHeaders },
+      { source: "/auth/:path*", headers: privateHeaders },
       { source: "/manage/:path*", headers: privateHeaders },
-      { source: "/access/:path*", headers: privateHeaders },
+      { source: "/onboarding", headers: privateHeaders },
       { source: "/api/secure/:path*", headers: privateHeaders },
       { source: "/api/internal/:path*", headers: privateHeaders },
       { source: "/api/health/:path*", headers: privateHeaders },

@@ -43,11 +43,10 @@ select is(public.compute_delivery_window_start(
 ), '2026-11-01 06:30:00+00'::timestamptz, 'fall-back repeated local time uses one deterministic UTC instant');
 
 insert into public.subscribers (
-  id, email, name, status, verified_at, consent_at, consent_version, unverified_expires_at
+  id, email, name, status, verified_at, consent_at, consent_version
 ) values (
   '80000000-0000-4000-8000-000000000001', 'phase8-reader@example.com', 'Phase Eight Reader',
-  'active', '2026-07-19 00:00:00+00', '2026-07-01 00:00:00+00', '2026-07-12',
-  '2026-07-08 00:00:00+00'
+  'active', '2026-07-19 00:00:00+00', '2026-07-01 00:00:00+00', '2026-07-12'
 );
 insert into public.subscriber_preferences (
   subscriber_id, country_code, state_region, city, language, categories,
@@ -254,10 +253,10 @@ select ok((select is_update from public.delivery_stories
   where delivery_id = '86000000-0000-4000-8000-000000000001'), 'newer version is durably labeled as an update');
 
 insert into public.subscribers (
-  id, email, name, status, verified_at, consent_at, consent_version, unverified_expires_at
+  id, email, name, status, verified_at, consent_at, consent_version
 ) values (
   '80000000-0000-4000-8000-000000000002', 'phase8-hindi@example.com', 'Hindi Reader',
-  'active', '2026-07-20', '2026-07-01', '2026-07-12', '2026-07-08'
+  'active', '2026-07-20', '2026-07-01', '2026-07-12'
 );
 insert into public.subscriber_preferences (
   subscriber_id, country_code, state_region, language, categories, story_count, theme
@@ -293,10 +292,10 @@ select is((select count(*)::integer from public.cluster_summaries
     and cluster_version = 2 and language = 'hi'), 1, 'one shared localization job exists for all subscribers');
 
 insert into public.subscribers (
-  id, email, name, status, verified_at, consent_at, consent_version, unverified_expires_at
+  id, email, name, status, verified_at, consent_at, consent_version
 ) values (
   '80000000-0000-4000-8000-000000000003', 'phase8-invalid-timezone@example.com', 'Invalid Zone',
-  'active', '2026-07-20', '2026-07-01', '2026-07-12', '2026-07-08'
+  'active', '2026-07-20', '2026-07-01', '2026-07-12'
 );
 insert into public.subscriber_preferences (
   subscriber_id, country_code, state_region, language, categories, story_count, theme

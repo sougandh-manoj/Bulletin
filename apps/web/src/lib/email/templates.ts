@@ -68,50 +68,6 @@ function emailFrame(input: {
 </html>`;
 }
 
-export function buildVerificationEmail(verificationUrl: string) {
-  return {
-    subject: "Confirm your Bulletin",
-    text: [
-      "Confirm your email to start your Bulletin.",
-      "",
-      verificationUrl,
-      "",
-      "This link expires after 24 hours. A newer link will replace this one.",
-      "If you did not request this, you can safely ignore it.",
-    ].join("\n"),
-    html: emailFrame({
-      eyebrow: "Confirm email",
-      heading: "Confirm your Bulletin",
-      body: "Use this link to confirm your email. Your briefing will follow the delivery time and appearance you chose.",
-      actionLabel: "Confirm my email",
-      actionUrl: verificationUrl,
-      note: "This link expires after 24 hours. A newer link replaces every older active link.",
-    }),
-  };
-}
-
-export function buildManagementEmail(managementUrl: string) {
-  return {
-    subject: "Manage your Bulletin",
-    text: [
-      "Use the secure link below to manage your Bulletin.",
-      "",
-      managementUrl,
-      "",
-      "This link expires after 15 minutes. It can be invalidated if access is ever in doubt.",
-      "If you did not request this, you can safely ignore it.",
-    ].join("\n"),
-    html: emailFrame({
-      eyebrow: "Private access",
-      heading: "Manage your briefing",
-      body: "Use this short-lived link to review your preferences, delivery controls, and briefing appearance.",
-      actionLabel: "Manage briefing",
-      actionUrl: managementUrl,
-      note: "This private link expires after 15 minutes. Do not forward it.",
-    }),
-  };
-}
-
 export function buildOwnerAccessEmail(accessUrl: string) {
   return {
     subject: "Bulletin owner operations access",

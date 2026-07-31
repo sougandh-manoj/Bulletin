@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { getAuthenticatedSubscriber } from "@/lib/security/session";
+import { getAuthenticatedBulletinSubscriber } from "@/lib/security/authenticated-subscriber";
 
 import styles from "../../secure-access.module.css";
 import { SecureShell } from "../../secure-shell";
 import DeleteForm from "./delete-form";
 
 export const metadata: Metadata = { title: "Delete Bulletin", robots: { index: false, follow: false } };
+export const dynamic = "force-dynamic";
 
 export default async function DeletePage() {
-  const authenticated = await getAuthenticatedSubscriber();
-  if (!authenticated) redirect("/manage/access?state=session");
+  const authenticated = await getAuthenticatedBulletinSubscriber();
+  if (!authenticated) redirect("/sign-in?intent=manage");
+  if (!authenticated.subscriber) redirect("/manage");
 
   return (
     <SecureShell linkHref="/manage" linkLabel="Keep my Bulletin">
@@ -26,7 +28,7 @@ export default async function DeletePage() {
             <li>Personal delivery records connected to this subscriber</li>
           </ul>
           <p>Permitted shared, non-personal public news records remain.</p>
-          <DeleteForm csrfToken={authenticated.csrfToken} />
+          <DeleteForm csrfToken="" />
         </section>
       </div>
     </SecureShell>

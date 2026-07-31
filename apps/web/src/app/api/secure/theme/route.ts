@@ -1,18 +1,20 @@
 import { z } from "zod";
 
-import { saveSubscriberTheme } from "@/data/subscribers";
+import {
+  isSubscriberVersionConflict,
+  saveSubscriberTheme,
+} from "@/data/subscribers";
 import { getSecureAccessEnvironment } from "@/env/server";
 import { createLogger } from "@/lib/logging/logger";
 import { invalidRequest, privateJson, unavailable } from "@/lib/security/api";
+import { getAuthenticatedBulletinSubscriber } from "@/lib/security/authenticated-subscriber";
 import { hasValidSameOrigin, readJsonBody } from "@/lib/security/request";
-import { getAuthenticatedSubscriber } from "@/lib/security/session";
 import { briefingThemeSchema } from "@/lib/validation/subscriber";
-import { isVersionConflict } from "@/services/access";
 
 export const runtime = "nodejs";
 const logger = createLogger("theme-save");
 const requestSchema = briefingThemeSchema.extend({
-  csrfToken: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
+  csrfToken: z.string().optional(),
 });
 
 export async function POST(request: Request) {
@@ -23,8 +25,8 @@ export async function POST(request: Request) {
     }
     const parsed = requestSchema.safeParse(await readJsonBody(request, 2_000));
     if (!parsed.success) return invalidRequest();
-    const authenticated = await getAuthenticatedSubscriber({ csrfToken: parsed.data.csrfToken });
-    if (!authenticated) {
+    const authenticated = await getAuthenticatedBulletinSubscriber();
+    if (!authenticated?.subscriber) {
       return privateJson({ ok: false, message: "Your secure session has expired." }, { status: 401 });
     }
     const version = await saveSubscriberTheme({
@@ -36,7 +38,7 @@ export async function POST(request: Request) {
     return privateJson({ ok: true, version });
   } catch (error) {
     if (error instanceof SyntaxError) return invalidRequest();
-    if (isVersionConflict(error)) {
+    if (isSubscriberVersionConflict(error)) {
       return privateJson({ ok: false, conflict: true, message: "Your theme changed in another session. Reload and try again." }, { status: 409 });
     }
     logger.error("Immediate theme save failed", { error });

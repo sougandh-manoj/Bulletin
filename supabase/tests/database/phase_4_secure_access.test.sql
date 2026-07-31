@@ -1,123 +1,167 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(15);
+set local search_path = public, extensions, pg_catalog;
+select plan(16);
 
-select has_function(
-  'public',
-  'create_subscriber_session',
-  array['uuid', 'bytea', 'bytea', 'bigint', 'timestamp with time zone', 'timestamp with time zone'],
-  'Phase 4 session creation function exists'
-);
-select has_function(
-  'public',
-  'validate_subscriber_session',
-  array['bytea', 'bytea', 'timestamp with time zone'],
-  'Phase 4 session validation function exists'
-);
-select has_function(
-  'public',
-  'revoke_subscriber_session',
-  array['bytea', 'timestamp with time zone'],
-  'Phase 4 session revocation function exists'
-);
-select has_function(
-  'public',
-  'consume_verification_token_with_theme',
-  array['bytea', 'briefing_theme', 'timestamp with time zone'],
-  'theme-led verification function exists'
+select ok(
+  to_regclass('public.email_verification_tokens') is null,
+  'legacy email verification token storage is removed'
 );
 select ok(
-  not has_function_privilege('anon', 'public.validate_subscriber_session(bytea,bytea,timestamptz)', 'EXECUTE'),
-  'browser anon role cannot validate subscriber sessions'
-);
-select ok(
-  not has_function_privilege('anon', 'public.consume_verification_token_with_theme(bytea,briefing_theme,timestamptz)', 'EXECUTE'),
-  'browser anon role cannot consume theme-led verification tokens'
-);
-
-create temporary table phase_4_subscriber as
-select gen_random_uuid() as id, transaction_timestamp() as anchor_at;
-
-insert into public.subscribers (
-  id, email, name, status, verified_at, consent_at, consent_version, unverified_expires_at
-)
-select id, 'phase4@example.com', 'Phase Four Reader', 'active', anchor_at,
-       anchor_at - interval '1 day', '2026-07-12', anchor_at - interval '1 day'
-from phase_4_subscriber;
-
-select lives_ok(
-  format(
-    'select * from public.create_subscriber_session(%L::uuid, digest(''phase4-session'', ''sha256''), digest(''phase4-csrf'', ''sha256''), 1, %L::timestamptz, %L::timestamptz)',
-    (select id from phase_4_subscriber),
-    (select anchor_at + interval '30 minutes' from phase_4_subscriber),
-    (select anchor_at from phase_4_subscriber)
-  ),
-  'a verified subscriber receives a short-lived hashed session'
+  to_regclass('public.subscriber_sessions') is null,
+  'legacy subscriber session storage is removed'
 );
 select is(
-  (select count(*)::integer from public.validate_subscriber_session(
-    digest('phase4-session', 'sha256'), digest('phase4-csrf', 'sha256'),
-    (select anchor_at + interval '1 minute' from phase_4_subscriber)
-  )),
+  (
+    select count(*)::integer
+    from pg_catalog.pg_proc as routine
+    join pg_catalog.pg_namespace as namespace on namespace.oid = routine.pronamespace
+    where namespace.nspname = 'public'
+      and routine.proname in (
+        'consume_verification_token_with_theme',
+        'create_subscriber_session',
+        'validate_subscriber_session',
+        'revoke_subscriber_session',
+        'issue_verification_token',
+        'inspect_verification_token',
+        'consume_verification_token',
+        'invalidate_subscriber_access',
+        'create_pending_subscriber'
+      )
+  ),
+  0,
+  'legacy verification and subscriber-session functions are removed'
+);
+select is(
+  (
+    select count(*)::integer
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'subscribers'
+      and column_name in ('verification_generation', 'token_version', 'unverified_expires_at')
+  ),
+  0,
+  'legacy subscriber authentication columns are removed'
+);
+select ok(
+  to_regprocedure('public.find_authenticated_subscriber(uuid,text)') is not null,
+  'authenticated subscriber lookup function exists'
+);
+select ok(
+  to_regprocedure(
+    'public.create_authenticated_subscriber(uuid,text,text,text,text,text,briefing_language,news_category[],text[],text[],smallint,briefing_theme,delivery_frequency,weekday,time without time zone,text,timestamp with time zone,text,timestamp with time zone)'
+  ) is not null,
+  'authenticated subscriber creation function exists'
+);
+select ok(
+  not has_function_privilege('anon', 'public.find_authenticated_subscriber(uuid,text)', 'EXECUTE'),
+  'browser anon role cannot look up authenticated subscribers directly'
+);
+select ok(
+  not has_function_privilege(
+    'authenticated',
+    'public.create_authenticated_subscriber(uuid,text,text,text,text,text,briefing_language,news_category[],text[],text[],smallint,briefing_theme,delivery_frequency,weekday,time without time zone,text,timestamp with time zone,text,timestamp with time zone)',
+    'EXECUTE'
+  ),
+  'browser authenticated role cannot create subscribers directly'
+);
+
+create temporary table phase_4_identity as
+select
+  '10000000-0000-4000-8000-000000000004'::uuid as auth_user_id,
+  '2026-07-31 06:00:00+00'::timestamptz as anchor_at;
+
+create temporary table phase_4_created as
+select *
+from public.create_authenticated_subscriber(
+  (select auth_user_id from phase_4_identity),
+  'phase4@example.com',
+  'Phase Four Reader',
+  'IN',
+  'Kerala',
+  'Kochi',
+  'en',
+  array['india', 'technology-ai']::public.news_category[],
+  array['space']::text[],
+  array['celebrity gossip']::text[],
+  8::smallint,
+  'light-editorial',
+  'daily',
+  null,
+  '08:30'::time,
+  'Asia/Kolkata',
+  '2026-07-31 05:59:00+00',
+  '2026-07-31',
+  (select anchor_at from phase_4_identity)
+);
+
+select is((select outcome from phase_4_created), 'created', 'social identity creates a subscriber');
+select is(
+  (select status::text from public.subscribers where id = (select subscriber_id from phase_4_created)),
+  'active',
+  'socially authenticated subscriber is active immediately'
+);
+select ok(
+  (select verified_at is not null from public.subscribers where id = (select subscriber_id from phase_4_created)),
+  'socially authenticated subscriber is verified immediately'
+);
+select is(
+  (
+    select auth_user_id
+    from public.subscribers
+    where id = (select subscriber_id from phase_4_created)
+  ),
+  (select auth_user_id from phase_4_identity),
+  'subscriber is linked to the Supabase Auth user'
+);
+select ok(
+  (
+    select next_delivery_at > (select anchor_at from phase_4_identity)
+    from public.subscriber_schedules
+    where subscriber_id = (select subscriber_id from phase_4_created)
+  ),
+  'social signup calculates a future delivery'
+);
+
+create temporary table phase_4_found as
+select *
+from public.find_authenticated_subscriber(
+  (select auth_user_id from phase_4_identity),
+  'phase4@example.com'
+);
+
+select is((select outcome from phase_4_found), 'found-by-auth', 'subscriber lookup resolves by auth identity');
+
+create temporary table phase_4_duplicate as
+select *
+from public.create_authenticated_subscriber(
+  (select auth_user_id from phase_4_identity),
+  'phase4@example.com',
+  'Changed Name',
+  'IN',
+  'Delhi',
+  null,
+  'hi',
+  array['politics']::public.news_category[],
+  '{}'::text[],
+  '{}'::text[],
+  4::smallint,
+  'dark-intelligence',
+  'weekly',
+  'monday',
+  '09:00'::time,
+  'Asia/Kolkata',
+  '2026-07-31 06:01:00+00',
+  'changed',
+  '2026-07-31 06:01:00+00'
+);
+
+select is((select outcome from phase_4_duplicate), 'existing', 'repeat social signup returns the existing subscriber');
+select is(
+  (select count(*)::integer from public.subscribers where email = 'phase4@example.com'),
   1,
-  'the correct session and CSRF hashes validate'
-);
-select is(
-  (select count(*)::integer from public.validate_subscriber_session(
-    digest('phase4-session', 'sha256'), digest('wrong-csrf', 'sha256'),
-    (select anchor_at + interval '1 minute' from phase_4_subscriber)
-  )),
-  0,
-  'an incorrect CSRF hash fails closed'
-);
-select is(
-  (select count(*)::integer from public.validate_subscriber_session(
-    digest('phase4-session', 'sha256'), null,
-    (select anchor_at + interval '31 minutes' from phase_4_subscriber)
-  )),
-  0,
-  'an expired session fails closed'
-);
-select lives_ok(
-  format(
-    'select * from public.create_subscriber_session(%L::uuid, digest(''phase4-revoked'', ''sha256''), digest(''phase4-revoked-csrf'', ''sha256''), 1, %L::timestamptz, %L::timestamptz)',
-    (select id from phase_4_subscriber),
-    (select anchor_at + interval '30 minutes' from phase_4_subscriber),
-    (select anchor_at from phase_4_subscriber)
-  ),
-  'a second valid session can be created'
-);
-select ok(
-  public.revoke_subscriber_session(
-    digest('phase4-revoked', 'sha256'),
-    (select anchor_at + interval '2 minutes' from phase_4_subscriber)
-  ),
-  'one session can be deliberately revoked'
-);
-select is(
-  (select count(*)::integer from public.validate_subscriber_session(
-    digest('phase4-revoked', 'sha256'), null,
-    (select anchor_at + interval '3 minutes' from phase_4_subscriber)
-  )),
-  0,
-  'a revoked session cannot be replayed'
-);
-select lives_ok(
-  format(
-    'select public.invalidate_subscriber_access(%L::uuid, %L::timestamptz)',
-    (select id from phase_4_subscriber),
-    (select anchor_at + interval '4 minutes' from phase_4_subscriber)
-  ),
-  'subscriber token-version invalidation succeeds'
-);
-select is(
-  (select count(*)::integer from public.validate_subscriber_session(
-    digest('phase4-session', 'sha256'), null,
-    (select anchor_at + interval '5 minutes' from phase_4_subscriber)
-  )),
-  0,
-  'token-version changes invalidate all older subscriber sessions'
+  'repeat social signup does not duplicate the email identity'
 );
 
 select * from finish();

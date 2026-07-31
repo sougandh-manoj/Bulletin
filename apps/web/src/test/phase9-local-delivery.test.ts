@@ -14,7 +14,6 @@ describe.skipIf(!localOnly)("Phase 9 local non-sending delivery integration", ()
     if (!["127.0.0.1", "localhost"].includes(databaseUrl.hostname)) throw new Error("Phase 9 fixture refuses non-local Supabase");
     process.env.APP_ENV = "test";
     process.env.APP_BASE_URL ??= "https://bulletin.example";
-    process.env.MANAGEMENT_LINK_SIGNING_SECRET ??= "phase-nine-management-secret-at-least-32-characters";
     process.env.SESSION_SIGNING_SECRET ??= "phase-nine-session-secret-at-least-32-characters";
     process.env.EMAIL_TRANSPORT = "test";
     const database = getTrustedSupabase();
@@ -27,7 +26,7 @@ describe.skipIf(!localOnly)("Phase 9 local non-sending delivery integration", ()
     try {
       const { data: source, error: sourceError } = await database.from("sources").select("id").limit(1).single();
       if (sourceError) throw sourceError;
-      await database.from("subscribers").insert({ id: subscriberId, email: `phase9-${subscriberId}@example.invalid`, name: "Phase 9 Fixture", status: "active", verified_at: "2026-07-19T00:00:00Z", consent_at: "2026-07-01T00:00:00Z", consent_version: "2026-07-12", unverified_expires_at: "2026-07-08T00:00:00Z" }).throwOnError();
+      await database.from("subscribers").insert({ id: subscriberId, email: `phase9-${subscriberId}@example.invalid`, name: "Phase 9 Fixture", status: "active", verified_at: "2026-07-19T00:00:00Z", consent_at: "2026-07-01T00:00:00Z", consent_version: "2026-07-12" }).throwOnError();
       await database.from("subscriber_preferences").insert({ subscriber_id: subscriberId, country_code: "IN", state_region: "Kerala", language: "en", categories: ["science"], story_count: 1, theme: "light-editorial" }).throwOnError();
       await database.from("subscriber_schedules").insert({ subscriber_id: subscriberId, frequency: "daily", local_delivery_time: "08:00:00", timezone: "Asia/Kolkata", next_delivery_at: "2026-07-20T02:30:00Z" }).throwOnError();
       await database.from("articles").insert({ id: articleId, source_id: source.id, original_title: "Exact Phase 9 story", normalized_title: "exact phase 9 story", description: "Supported public facts.", canonical_url: `https://fixture.invalid/${articleId}`, canonical_url_hash: hash(`u-${articleId}`), normalized_title_hash: hash(`t-${articleId}`), published_at: "2026-07-19T01:30:00Z", processing_status: "processed", processed_at: "2026-07-19T02:00:00Z", next_processing_at: "2026-07-19T02:00:00Z" }).throwOnError();

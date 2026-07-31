@@ -6,7 +6,6 @@ import { runDeliveryBatch } from "./delivery";
 vi.mock("@/env/server", () => ({
   getSecureAccessEnvironment: () => ({
     APP_BASE_URL: "https://bulletin.example",
-    MANAGEMENT_LINK_SIGNING_SECRET: "management-secret-at-least-thirty-two-characters",
     LOG_LEVEL: "error",
   }),
   getServerEnvironment: () => ({ LOG_LEVEL: "error" }),
@@ -19,8 +18,6 @@ function context(attemptCount = 1) {
     subscriberId: "00000000-0000-4000-8000-000000000003",
     recipient: "recipient@example.invalid",
     subscriberName: "Reader",
-    subscriberPublicReference: "00000000-0000-4000-8000-000000000004",
-    subscriberTokenVersion: 1,
     scheduledFor: "2026-07-12T02:30:00.000Z",
     preferenceVersion: 1,
     language: "en" as const,
@@ -66,6 +63,9 @@ describe("Phase 9 delivery worker", () => {
     expect(calls).toEqual(["rendered", "gate", "smtp", "complete"]);
     expect(result.sent).toBe(1);
     expect(dependencies.fail).not.toHaveBeenCalled();
+    expect(dependencies.send).toHaveBeenCalledWith(expect.objectContaining({
+      html: expect.stringContaining("https://bulletin.example/manage"),
+    }));
     expect(dependencies.resolveAlert).toHaveBeenCalledWith({
       key: "delivery-worker-batch-failure",
       now: new Date("2026-07-12T02:31:00Z"),

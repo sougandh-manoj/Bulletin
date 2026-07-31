@@ -5,8 +5,7 @@ set local search_path = public, extensions, pg_catalog;
 select plan(6);
 
 insert into public.subscribers (
-  id, email, name, status, verified_at, consent_at, consent_version,
-  unverified_expires_at
+  id, email, name, status, verified_at, consent_at, consent_version
 ) values (
   'ac000000-0000-4000-8000-000000000001',
   'configurable-count@example.invalid',
@@ -14,8 +13,7 @@ insert into public.subscribers (
   'active',
   '2026-07-24 00:00+00',
   '2026-07-24 00:00+00',
-  '2026-07-12',
-  '2026-07-25 00:00+00'
+  '2026-07-12'
 );
 
 select lives_ok(

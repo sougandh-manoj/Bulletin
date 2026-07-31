@@ -13,29 +13,11 @@ import { getTrustedSupabase } from "@/lib/supabase/server";
 
 type SubscriberStatus = "pending" | "active" | "paused";
 
-type SubscriberLookup = {
-  id: string;
-  public_reference: string;
-  status: SubscriberStatus;
-  token_version: number;
-  unverified_expires_at: string;
-};
-
-type SessionValidation = {
-  session_id: string;
-  subscriber_id: string;
-  subscriber_public_reference: string;
-  subscriber_status: SubscriberStatus;
-  token_version: number;
-  expires_at: string;
-};
-
 export type SubscriberManagementDTO = {
   subscriberId: string;
   publicReference: string;
   name: string;
   status: Exclude<SubscriberStatus, "pending">;
-  tokenVersion: number;
   preferenceVersion: number;
   countryCode: string;
   stateRegion: string;
@@ -63,6 +45,10 @@ export class SubscriberDataError extends Error {
   }
 }
 
+export function isSubscriberVersionConflict(error: unknown) {
+  return (error as SubscriberDataError | undefined)?.code === "40001";
+}
+
 function dataError(error: { code?: string; message?: string } | null) {
   if (!error) return;
   throw new SubscriberDataError(error.code ?? "database-error", error.message);
@@ -73,178 +59,52 @@ function firstRow<T>(data: T[] | T | null): T | null {
   return data;
 }
 
-export async function findSubscriberByEmail(email: string) {
+export async function findAuthenticatedSubscriber(input: {
+  authUserId: string;
+  email: string;
+}) {
   const database = getTrustedSupabase();
-  const { data, error } = await database
-    .from("subscribers")
-    .select("id, public_reference, status, token_version, unverified_expires_at")
-    .eq("email", email)
-    .maybeSingle<SubscriberLookup>();
+  const { data, error } = await database.rpc("find_authenticated_subscriber", {
+    p_auth_user_id: input.authUserId,
+    p_email: input.email,
+  });
   dataError(error);
-  return data;
+  return firstRow<{ subscriber_id: string; outcome: string }>(data);
 }
 
-export async function findSubscriberForManagement(
-  publicReference: string,
-): Promise<SubscriberLookup | null> {
+export async function createAuthenticatedSubscriber(input: {
+  authUserId: string;
+  preferences: SubscriberPreferences;
+}) {
   const database = getTrustedSupabase();
-  const { data, error } = await database
-    .from("subscribers")
-    .select("id, public_reference, status, token_version, unverified_expires_at")
-    .eq("public_reference", publicReference)
-    .maybeSingle<SubscriberLookup>();
-  dataError(error);
-  return data;
-}
-
-export async function createPendingSubscriber(preferences: SubscriberPreferences) {
-  const database = getTrustedSupabase();
-  const { data, error } = await database.rpc("create_pending_subscriber", {
-    p_email: preferences.email,
-    p_name: preferences.name,
-    p_country_code: preferences.countryCode,
-    p_state_region: preferences.stateRegion,
-    p_city: preferences.city || null,
-    p_language: preferences.language,
-    p_categories: preferences.categories,
-    p_custom_topics: preferences.customTopics,
-    p_excluded_topics: preferences.excludedTopics,
-    p_story_count: preferences.storyCount,
-    p_theme: preferences.theme,
-    p_frequency: preferences.frequency,
-    p_weekly_day: preferences.weeklyDay ?? null,
-    p_local_delivery_time: preferences.deliveryTime,
-    p_timezone: preferences.timezone,
+  const { data, error } = await database.rpc("create_authenticated_subscriber", {
+    p_auth_user_id: input.authUserId,
+    p_email: input.preferences.email,
+    p_name: input.preferences.name,
+    p_country_code: input.preferences.countryCode,
+    p_state_region: input.preferences.stateRegion,
+    p_city: input.preferences.city || null,
+    p_language: input.preferences.language,
+    p_categories: input.preferences.categories,
+    p_custom_topics: input.preferences.customTopics,
+    p_excluded_topics: input.preferences.excludedTopics,
+    p_story_count: input.preferences.storyCount,
+    p_theme: input.preferences.theme,
+    p_frequency: input.preferences.frequency,
+    p_weekly_day: input.preferences.weeklyDay ?? null,
+    p_local_delivery_time: input.preferences.deliveryTime,
+    p_timezone: input.preferences.timezone,
     p_consent_at: new Date().toISOString(),
     p_consent_version: PRODUCT.consentVersion,
   });
   dataError(error);
-  const row = firstRow<{ subscriber_id: string; outcome: string }>(data);
-  if (!row) throw new SubscriberDataError("empty-result");
-  return row;
-}
-
-export async function issueVerificationToken(
-  subscriberId: string,
-  tokenHash: string,
-) {
-  const database = getTrustedSupabase();
-  const { data, error } = await database.rpc("issue_verification_token", {
-    p_subscriber_id: subscriberId,
-    p_token_hash: tokenHash,
-  });
-  dataError(error);
-  const row = firstRow<{ token_id: string; generation: number; expires_at: string }>(
-    data,
-  );
-  if (!row) throw new SubscriberDataError("empty-result");
-  return row;
-}
-
-export async function invalidateVerificationToken(tokenId: string) {
-  const database = getTrustedSupabase();
-  const { error } = await database
-    .from("email_verification_tokens")
-    .update({ status: "invalidated", invalidated_at: new Date().toISOString() })
-    .eq("id", tokenId)
-    .eq("status", "active");
-  dataError(error);
-}
-
-export async function inspectVerificationToken(tokenHash: string) {
-  const database = getTrustedSupabase();
-  const { data, error } = await database.rpc("inspect_verification_token", {
-    p_token_hash: tokenHash,
-  });
-  dataError(error);
-  return firstRow<{
-    is_valid: boolean;
-    subscriber_public_reference: string;
-    expires_at: string;
-  }>(data);
-}
-
-export async function loadSubscriberThemeForVerification(
-  publicReference: string,
-) {
-  const database = getTrustedSupabase();
-  const { data, error } = await database
-    .from("subscribers")
-    .select(`
-      public_reference,
-      subscriber_preferences (
-        theme
-      )
-    `)
-    .eq("public_reference", publicReference)
-    .maybeSingle();
-  dataError(error);
-  if (!data) return null;
-  const preference = Array.isArray(data.subscriber_preferences)
-    ? data.subscriber_preferences[0]
-    : data.subscriber_preferences;
-  return preference?.theme as BriefingTheme | undefined;
-}
-
-export async function consumeVerificationToken(
-  tokenHash: string,
-  theme: BriefingTheme,
-) {
-  const database = getTrustedSupabase();
-  const { data, error } = await database.rpc("consume_verification_token_with_theme", {
-    p_token_hash: tokenHash,
-    p_theme: theme,
-  });
-  dataError(error);
   const row = firstRow<{
-    subscriber_public_reference: string;
-    next_delivery_at: string;
+    subscriber_id: string;
+    outcome: "created" | "existing" | "email-claimed";
+    next_delivery_at: string | null;
   }>(data);
-  if (!row) throw new SubscriberDataError("invalid-token");
+  if (!row) throw new SubscriberDataError("empty-result");
   return row;
-}
-
-export async function createSubscriberSession(input: {
-  subscriberId: string;
-  tokenVersion: number;
-  sessionHash: string;
-  csrfHash: string;
-  expiresAt: string;
-}) {
-  const database = getTrustedSupabase();
-  const { data, error } = await database.rpc("create_subscriber_session", {
-    p_subscriber_id: input.subscriberId,
-    p_session_hash: input.sessionHash,
-    p_csrf_hash: input.csrfHash,
-    p_expected_token_version: input.tokenVersion,
-    p_expires_at: input.expiresAt,
-  });
-  dataError(error);
-  const row = firstRow<{ session_id: string; expires_at: string }>(data);
-  if (!row) throw new SubscriberDataError("session-not-created");
-  return row;
-}
-
-export async function validateSubscriberSession(
-  sessionHash: string,
-  csrfHash?: string,
-) {
-  const database = getTrustedSupabase();
-  const { data, error } = await database.rpc("validate_subscriber_session", {
-    p_session_hash: sessionHash,
-    p_csrf_hash: csrfHash ?? null,
-  });
-  dataError(error);
-  return firstRow<SessionValidation>(data);
-}
-
-export async function revokeSubscriberSession(sessionHash: string) {
-  const database = getTrustedSupabase();
-  const { data, error } = await database.rpc("revoke_subscriber_session", {
-    p_session_hash: sessionHash,
-  });
-  dataError(error);
-  return Boolean(data);
 }
 
 export async function loadSubscriberManagementDTO(
@@ -258,7 +118,6 @@ export async function loadSubscriberManagementDTO(
       public_reference,
       name,
       status,
-      token_version,
       subscriber_preferences (
         country_code,
         state_region,
@@ -297,7 +156,6 @@ export async function loadSubscriberManagementDTO(
     publicReference: data.public_reference as string,
     name: data.name as string,
     status: data.status as "active" | "paused",
-    tokenVersion: Number(data.token_version),
     preferenceVersion: Number(preference.version),
     countryCode: preference.country_code as string,
     stateRegion: preference.state_region as string,
@@ -399,12 +257,7 @@ export async function deleteSubscriber(subscriberId: string) {
 }
 
 export async function consumeRateLimit(input: {
-  scope:
-    | "email-check"
-    | "verification-request"
-    | "management-request"
-    | "token-validation"
-    | "admin-access";
+  scope: "admin-access";
   subjectHash: string;
   windowStartedAt: string;
   expiresAt: string;

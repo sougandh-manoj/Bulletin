@@ -42,7 +42,7 @@ export const NEWS_CATEGORIES = [
 export const PUBLIC_ROUTES = {
   home: "/",
   onboarding: "/onboarding",
-  manageAccess: "/manage/access",
+  manageAccess: "/manage",
 } as const;
 
 export const INDIAN_REGIONS = [

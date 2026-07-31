@@ -27,7 +27,6 @@ import {
   sendBriefingEmail,
 } from "@/lib/email/mailer";
 import { createLogger } from "@/lib/logging/logger";
-import { buildManagementUrl } from "@/lib/security/crypto";
 import { recordAndNotifyOperationalAlert } from "@/services/alerts";
 
 const logger = createLogger("briefing-delivery");
@@ -101,18 +100,10 @@ function assertSafeContext(context: DeliveryRenderContext) {
   });
 }
 
-function render(context: DeliveryRenderContext, now: Date) {
+function render(context: DeliveryRenderContext) {
   assertSafeContext(context);
   const environment = getSecureAccessEnvironment();
-  const manageUrl = buildManagementUrl(
-    environment.APP_BASE_URL,
-    {
-      publicReference: context.subscriberPublicReference,
-      tokenVersion: context.subscriberTokenVersion,
-      expiresAt: Math.floor(now.getTime() / 1000) + 15 * 60,
-    },
-    environment.MANAGEMENT_LINK_SIGNING_SECRET,
-  );
+  const manageUrl = new URL("/manage", environment.APP_BASE_URL).toString();
   const stories: StoredBriefingStory[] = context.stories.map((story) => ({
     position: story.position,
     category: story.category,
@@ -175,7 +166,7 @@ async function processClaim(input: {
   let smtpAccepted = false;
   try {
     context = await input.dependencies.load({ claim: input.claim });
-    const email = render(context, input.now());
+    const email = render(context);
     const marked = await input.dependencies.markRendered({
       claim: input.claim,
       storyCount: context.actualStoryCount,

@@ -7,10 +7,8 @@ import { getSecureAccessEnvironment } from "@/env/server";
 import { createLogger } from "@/lib/logging/logger";
 
 import {
-  buildManagementEmail,
   buildOwnerAlertEmail,
   buildOwnerAccessEmail,
-  buildVerificationEmail,
 } from "./templates";
 
 const logger = createLogger("transactional-email");
@@ -57,7 +55,7 @@ export function isSmtpDeliveryAccepted(info: unknown) {
 
 async function send(input: {
   recipient: string;
-  kind: "verification" | "management" | "owner-access" | "owner-alert";
+  kind: "owner-access" | "owner-alert";
   subject: string;
   text: string;
   html: string;
@@ -150,22 +148,6 @@ export async function sendBriefingEmail(input: {
     });
     throw classified;
   }
-}
-
-export async function sendVerificationEmail(recipient: string, url: string) {
-  await send({
-    recipient,
-    kind: "verification",
-    ...buildVerificationEmail(url),
-  });
-}
-
-export async function sendManagementEmail(recipient: string, url: string) {
-  await send({
-    recipient,
-    kind: "management",
-    ...buildManagementEmail(url),
-  });
 }
 
 export async function sendOwnerAccessEmail(recipient: string, url: string) {

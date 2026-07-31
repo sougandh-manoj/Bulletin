@@ -29,13 +29,18 @@ export type SecureAccessEnvironment = ServerEnvironment & {
   APP_BASE_URL: string;
   SUPABASE_URL: string;
   SUPABASE_SERVICE_ROLE_KEY: string;
-  MANAGEMENT_LINK_SIGNING_SECRET: string;
   SESSION_SIGNING_SECRET: string;
 };
 
 export type TrustedDatabaseEnvironment = ServerEnvironment & {
   SUPABASE_URL: string;
   SUPABASE_SERVICE_ROLE_KEY: string;
+};
+
+export type SupabaseAuthEnvironment = ServerEnvironment & {
+  APP_BASE_URL: string;
+  SUPABASE_URL: string;
+  SUPABASE_ANON_KEY: string;
 };
 
 export type IngestionEnvironment = TrustedDatabaseEnvironment & {
@@ -70,6 +75,17 @@ export function getTrustedDatabaseEnvironment(): TrustedDatabaseEnvironment {
     throw new Error(`Invalid trusted-database environment configuration: ${missing.join(", ")}`);
   }
   return environment as TrustedDatabaseEnvironment;
+}
+
+export function getSupabaseAuthEnvironment(): SupabaseAuthEnvironment {
+  const environment = getServerEnvironment();
+  const missing = ["APP_BASE_URL", "SUPABASE_URL", "SUPABASE_ANON_KEY"].filter(
+    (field) => !environment[field as keyof ServerEnvironment],
+  );
+  if (missing.length > 0) {
+    throw new Error(`Invalid Supabase Auth environment configuration: ${missing.join(", ")}`);
+  }
+  return environment as SupabaseAuthEnvironment;
 }
 
 export function getIngestionEnvironment(): IngestionEnvironment {
@@ -110,7 +126,6 @@ export function getSecureAccessEnvironment(): SecureAccessEnvironment {
     "APP_BASE_URL",
     "SUPABASE_URL",
     "SUPABASE_SERVICE_ROLE_KEY",
-    "MANAGEMENT_LINK_SIGNING_SECRET",
     "SESSION_SIGNING_SECRET",
   ] as const;
   const missing: string[] = required.filter((field) => !environment[field]);
@@ -147,7 +162,6 @@ export function getProductionEnvironment(): ProductionEnvironment {
   if (environment.INTELLIGENCE_PROVIDER !== "groq") missing.push("INTELLIGENCE_PROVIDER=groq");
   if (!environment.GROQ_API_KEY) missing.push("GROQ_API_KEY");
   const independentSecrets = [
-    environment.MANAGEMENT_LINK_SIGNING_SECRET,
     environment.SESSION_SIGNING_SECRET,
     environment.CRON_SHARED_SECRET,
   ].filter((value): value is string => Boolean(value));

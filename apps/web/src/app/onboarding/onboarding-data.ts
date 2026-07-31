@@ -75,8 +75,8 @@ export const STEP_CONTENT = [
     eyebrow: "About you",
     heading: "Let’s make this yours.",
     description:
-      "Tell us where to send your briefing. You’ll confirm your email before delivery begins.",
-    note: "Your email is used only to deliver and manage your Bulletin.",
+      "Tell us who this signed-in account should receive the briefing as.",
+    note: "Your account email is used only to deliver and manage your Bulletin.",
   },
   {
     eyebrow: "Place & language",
@@ -103,7 +103,7 @@ export const STEP_CONTENT = [
     eyebrow: "Final review",
     heading: "Your Bulletin, at a glance.",
     description: "Review your choices before we prepare your briefing.",
-    note: "Nothing starts until you confirm your email in the secure delivery flow.",
+    note: "Delivery starts after you create the briefing for this signed-in account.",
   },
 ] as const;
 

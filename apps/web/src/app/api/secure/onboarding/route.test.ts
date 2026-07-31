@@ -1,21 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  createPendingSubscriber: vi.fn(),
-  findSubscriberForManagement: vi.fn(),
-  enforceRateLimit: vi.fn(),
-  issueManagementEmail: vi.fn(),
-  issueVerificationEmailForSubscriber: vi.fn(),
+  createAuthenticatedSubscriber: vi.fn(),
+  getAuthenticatedAuthUser: vi.fn(),
 }));
 
 vi.mock("@/data/subscribers", () => ({
-  createPendingSubscriber: mocks.createPendingSubscriber,
-  findSubscriberForManagement: mocks.findSubscriberForManagement,
+  createAuthenticatedSubscriber: mocks.createAuthenticatedSubscriber,
 }));
-vi.mock("@/lib/security/rate-limit", () => ({ enforceRateLimit: mocks.enforceRateLimit }));
-vi.mock("@/services/access", () => ({
-  issueManagementEmail: mocks.issueManagementEmail,
-  issueVerificationEmailForSubscriber: mocks.issueVerificationEmailForSubscriber,
+vi.mock("@/lib/security/authenticated-subscriber", () => ({
+  getAuthenticatedAuthUser: mocks.getAuthenticatedAuthUser,
 }));
 
 import { POST } from "@/app/api/secure/onboarding/route";
@@ -49,50 +43,66 @@ function request(body: unknown = payload) {
 describe("atomic onboarding submission boundary", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.enforceRateLimit.mockResolvedValue(true);
-    mocks.issueManagementEmail.mockResolvedValue(undefined);
-    mocks.issueVerificationEmailForSubscriber.mockResolvedValue(undefined);
+    mocks.getAuthenticatedAuthUser.mockResolvedValue({
+      user: { id: "auth-user-1" },
+      email: "reader@example.com",
+    });
   });
 
-  it("creates a pending subscriber and sends verification only after full validation", async () => {
-    mocks.createPendingSubscriber.mockResolvedValue({ subscriber_id: "subscriber-1", outcome: "created" });
+  it("creates an active subscriber for the signed-in account after full validation", async () => {
+    mocks.createAuthenticatedSubscriber.mockResolvedValue({
+      subscriber_id: "subscriber-1",
+      outcome: "created",
+      next_delivery_at: "2026-07-31T02:30:00Z",
+    });
     const response = await POST(request());
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ ok: true, state: "pending", emailSent: true });
-    expect(mocks.createPendingSubscriber).toHaveBeenCalledTimes(1);
-    expect(mocks.createPendingSubscriber).toHaveBeenCalledWith(expect.objectContaining({ theme: "amber-brief" }));
-    expect(mocks.issueVerificationEmailForSubscriber).toHaveBeenCalledWith({ subscriberId: "subscriber-1", email: "reader@example.com" });
+    expect(await response.json()).toEqual({
+      ok: true,
+      state: "created",
+      nextDeliveryAt: "2026-07-31T02:30:00Z",
+    });
+    expect(mocks.createAuthenticatedSubscriber).toHaveBeenCalledWith({
+      authUserId: "auth-user-1",
+      preferences: expect.objectContaining({ theme: "amber-brief" }),
+    });
   });
 
-  it("preserves an existing pending account and reissues verification", async () => {
-    mocks.createPendingSubscriber.mockResolvedValue({ subscriber_id: "subscriber-1", outcome: "existing-pending" });
-    const response = await POST(request({ ...payload, name: "Overwrite attempt" }));
+  it("returns existing without creating a duplicate", async () => {
+    mocks.createAuthenticatedSubscriber.mockResolvedValue({
+      subscriber_id: "subscriber-1",
+      outcome: "existing",
+      next_delivery_at: "2026-07-31T02:30:00Z",
+    });
+    const response = await POST(request());
     expect(response.status).toBe(200);
-    expect(mocks.issueVerificationEmailForSubscriber).toHaveBeenCalledWith({ subscriberId: "subscriber-1", email: "reader@example.com" });
-    expect(mocks.issueManagementEmail).not.toHaveBeenCalled();
+    expect(await response.json()).toEqual({
+      ok: true,
+      state: "existing",
+      nextDeliveryAt: "2026-07-31T02:30:00Z",
+    });
   });
 
-  it("stops duplicate verified onboarding and sends management access instead", async () => {
-    mocks.createPendingSubscriber.mockResolvedValue({ subscriber_id: "subscriber-1", outcome: "existing-verified" });
-    mocks.findSubscriberForManagement.mockResolvedValue({ public_reference: "public-ref", token_version: 7 });
+  it("rejects mismatched account email", async () => {
+    mocks.getAuthenticatedAuthUser.mockResolvedValue({
+      user: { id: "auth-user-1" },
+      email: "other@example.com",
+    });
     const response = await POST(request());
-    expect(await response.json()).toEqual({ ok: true, state: "verified", emailSent: true });
-    expect(mocks.issueManagementEmail).toHaveBeenCalledWith({ email: "reader@example.com", publicReference: "public-ref", tokenVersion: 7 });
-    expect(mocks.issueVerificationEmailForSubscriber).not.toHaveBeenCalled();
+    expect(response.status).toBe(403);
+    expect(mocks.createAuthenticatedSubscriber).not.toHaveBeenCalled();
   });
 
-  it("keeps the retryable UI state and never claims delivery after an SMTP failure", async () => {
-    mocks.createPendingSubscriber.mockResolvedValue({ subscriber_id: "subscriber-1", outcome: "created" });
-    mocks.issueVerificationEmailForSubscriber.mockRejectedValue(new Error("safe fake failure"));
+  it("requires sign-in before any subscriber operation", async () => {
+    mocks.getAuthenticatedAuthUser.mockResolvedValue(null);
     const response = await POST(request());
-    expect(response.status).toBe(503);
-    const result = await response.json() as { emailSent?: boolean };
-    expect(result.emailSent).not.toBe(true);
+    expect(response.status).toBe(401);
+    expect(mocks.createAuthenticatedSubscriber).not.toHaveBeenCalled();
   });
 
   it("rejects incomplete payloads before any subscriber operation", async () => {
     const response = await POST(request({ email: "reader@example.com" }));
     expect(response.status).toBe(400);
-    expect(mocks.createPendingSubscriber).not.toHaveBeenCalled();
+    expect(mocks.createAuthenticatedSubscriber).not.toHaveBeenCalled();
   });
 });

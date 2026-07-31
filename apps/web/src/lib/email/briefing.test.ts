@@ -8,7 +8,7 @@ const base = {
   scheduledFor: "2026-07-12T02:30:00.000Z",
   timezone: "Asia/Kolkata",
   subscriberName: "Asha",
-  manageUrl: "https://bulletin.example/access/manage?r=00000000-0000-4000-8000-000000000001&v=1&e=1999999999&s=private-signature",
+  manageUrl: "https://bulletin.example/manage",
   stories: [
     {
       position: 1,

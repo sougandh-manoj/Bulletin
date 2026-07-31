@@ -24,7 +24,7 @@ describe("product configuration", () => {
     expect(PRODUCT.defaultDeliveryTime).toBe("08:00");
     expect(PRODUCT.landing.title).toBe("The news you need. Nothing you don’t.");
     expect(PUBLIC_ROUTES.onboarding).toBe("/onboarding");
-    expect(PUBLIC_ROUTES.manageAccess).toBe("/manage/access");
+    expect(PUBLIC_ROUTES.manageAccess).toBe("/manage");
   });
 
   it("contains the confirmed languages and all fifteen categories", () => {

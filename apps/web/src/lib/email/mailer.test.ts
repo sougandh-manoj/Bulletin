@@ -11,7 +11,7 @@ vi.mock("@/env/server", () => ({
 
 import {
   isSmtpDeliveryAccepted,
-  sendVerificationEmail,
+  sendOwnerAccessEmail,
 } from "@/lib/email/mailer";
 
 describe("safe automated email transport", () => {
@@ -20,9 +20,9 @@ describe("safe automated email transport", () => {
   it("accepts a test message without network delivery or sensitive logging", async () => {
     const write = vi.spyOn(console, "info").mockImplementation(() => undefined);
     await expect(
-      sendVerificationEmail(
+      sendOwnerAccessEmail(
         "recipient@example.invalid",
-        "https://bulletin.example/access/verify?t=private-test-token",
+        "https://bulletin.example/internal/access/exchange?t=private-test-token",
       ),
     ).resolves.toBeUndefined();
 

@@ -17,8 +17,8 @@ select ok(not has_table_privilege('anon', 'public.backup_runs', 'SELECT'), 'brow
 select ok(not has_function_privilege('authenticated', 'public.load_delivery_render_context(uuid,uuid)', 'EXECUTE'), 'browser roles cannot load subscriber delivery context');
 select ok(has_function_privilege('service_role', 'public.begin_delivery_send(uuid,uuid,timestamptz)', 'EXECUTE'), 'service worker can use the mandatory final send gate');
 
-insert into public.subscribers (id, email, name, status, verified_at, consent_at, consent_version, unverified_expires_at)
-values ('91000000-0000-4000-8000-000000000001', 'phase9@example.com', 'Phase Nine Reader', 'active', '2026-07-19', '2026-07-01', '2026-07-12', '2026-07-08');
+insert into public.subscribers (id, email, name, status, verified_at, consent_at, consent_version)
+values ('91000000-0000-4000-8000-000000000001', 'phase9@example.com', 'Phase Nine Reader', 'active', '2026-07-19', '2026-07-01', '2026-07-12');
 insert into public.subscriber_preferences (subscriber_id,country_code,state_region,language,categories,story_count,theme)
 values ('91000000-0000-4000-8000-000000000001','IN','Kerala','en',array['technology-ai']::public.news_category[],4,'light-editorial');
 insert into public.subscriber_schedules (subscriber_id,frequency,local_delivery_time,timezone,next_delivery_at)

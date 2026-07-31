@@ -192,7 +192,6 @@ try {
     verified_at: new Date().toISOString(),
     consent_at: new Date().toISOString(),
     consent_version: "owner-authorized-theme-preview-2026-07-19",
-    unverified_expires_at: "2026-07-20T00:00:00.000Z",
   }]);
   await rows("subscriber_preferences", [{
     subscriber_id: subscriberId,

@@ -41,7 +41,6 @@ describe.skipIf(!localOnly)("Phase 8 local deterministic personalization fixture
         verified_at: "2026-07-19T00:00:00.000Z",
         consent_at: "2026-07-01T00:00:00.000Z",
         consent_version: "2026-07-12",
-        unverified_expires_at: "2026-07-08T00:00:00.000Z",
       });
       if (subscriberError) throw subscriberError;
       const { error: preferenceError } = await database.from("subscriber_preferences").insert({

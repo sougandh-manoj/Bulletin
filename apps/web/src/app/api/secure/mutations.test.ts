@@ -6,11 +6,12 @@ const mocks = vi.hoisted(() => ({
   pauseSubscriber: vi.fn(),
   resumeSubscriber: vi.fn(),
   deleteSubscriber: vi.fn(),
-  getAuthenticatedSubscriber: vi.fn(),
-  clearSubscriberSessionCookie: vi.fn(),
+  getAuthenticatedBulletinSubscriber: vi.fn(),
+  signOut: vi.fn(),
 }));
 
 vi.mock("@/data/subscribers", () => ({
+  isSubscriberVersionConflict: (error: { code?: string }) => error?.code === "40001",
   saveSubscriberPreferences: mocks.saveSubscriberPreferences,
   saveSubscriberTheme: mocks.saveSubscriberTheme,
   pauseSubscriber: mocks.pauseSubscriber,
@@ -21,14 +22,12 @@ vi.mock("@/env/server", () => ({
   getSecureAccessEnvironment: () => ({ APP_BASE_URL: "https://bulletin.example", LOG_LEVEL: "error" }),
   getServerEnvironment: () => ({ LOG_LEVEL: "error" }),
 }));
-vi.mock("@/lib/security/session", () => ({
-  getAuthenticatedSubscriber: mocks.getAuthenticatedSubscriber,
-  clearSubscriberSessionCookie: mocks.clearSubscriberSessionCookie,
+vi.mock("@/lib/security/authenticated-subscriber", () => ({
+  getAuthenticatedBulletinSubscriber: mocks.getAuthenticatedBulletinSubscriber,
 }));
-vi.mock("@/services/access", () => ({
-  isVersionConflict: (error: { code?: string }) => error?.code === "40001",
+vi.mock("@/lib/supabase/auth", () => ({
+  getSupabaseAuthClient: () => ({ auth: { signOut: mocks.signOut } }),
 }));
-
 import { POST as deletePost } from "@/app/api/secure/delete/route";
 import { POST as deliveryPost } from "@/app/api/secure/delivery/route";
 import { POST as preferencesPost } from "@/app/api/secure/preferences/route";
@@ -66,7 +65,7 @@ function request(path: string, body: unknown, origin = "https://bulletin.example
 describe("authenticated Phase 4 mutations", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.getAuthenticatedSubscriber.mockResolvedValue(subscriber);
+    mocks.getAuthenticatedBulletinSubscriber.mockResolvedValue(subscriber);
     mocks.saveSubscriberPreferences.mockResolvedValue({
       version: 8,
       nextDeliveryAt: "2026-07-15T15:15:00Z",
@@ -75,6 +74,7 @@ describe("authenticated Phase 4 mutations", () => {
     mocks.pauseSubscriber.mockResolvedValue(undefined);
     mocks.resumeSubscriber.mockResolvedValue("2026-07-15T02:30:00Z");
     mocks.deleteSubscriber.mockResolvedValue(true);
+    mocks.signOut.mockResolvedValue({ error: null });
   });
 
   it("saves the complete preference state with optimistic versioning", async () => {
@@ -130,9 +130,9 @@ describe("authenticated Phase 4 mutations", () => {
     const deleted = await deletePost(request("/api/secure/delete", { csrfToken, confirmation: "DELETE" }));
     expect(deleted.status).toBe(200);
     expect(mocks.deleteSubscriber).toHaveBeenCalledWith("subscriber-1");
-    expect(mocks.clearSubscriberSessionCookie).toHaveBeenCalled();
+    expect(mocks.signOut).toHaveBeenCalled();
 
-    mocks.getAuthenticatedSubscriber.mockResolvedValue(null);
+    mocks.getAuthenticatedBulletinSubscriber.mockResolvedValue(null);
     const replay = await deletePost(request("/api/secure/delete", { csrfToken, confirmation: "DELETE" }));
     expect(replay.status).toBe(401);
     expect(mocks.deleteSubscriber).toHaveBeenCalledTimes(1);

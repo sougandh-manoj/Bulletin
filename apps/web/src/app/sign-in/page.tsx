@@ -57,9 +57,7 @@ export default async function SignInPage({
           {intent === "manage" ? "Welcome back" : "Create your Bulletin"}
         </p>
         <h1 className={styles.title}>Sign in to continue.</h1>
-        <p className={styles.lede}>
-          Use the account that should own this private briefing.
-        </p>
+        <p className={styles.lede}>Choose an account to continue.</p>
         <section className={styles.signInActions}>
           {state === "coming-soon" && (
             <p className={styles.status}>Apple sign-in is coming soon.</p>

@@ -29,11 +29,11 @@ export default async function OnboardingPage() {
           <p className={secureStyles.lede}>
             You can manage your existing briefing instead.
           </p>
-          <section className={secureStyles.card}>
+          <div className={secureStyles.standaloneAction}>
             <Link className={secureStyles.button} href="/manage">
               Manage briefing
             </Link>
-          </section>
+          </div>
         </div>
       </SecureShell>
     );

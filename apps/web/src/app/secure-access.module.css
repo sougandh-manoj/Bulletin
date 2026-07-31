@@ -177,8 +177,23 @@
 }
 
 .signInActions {
-  width: 100%;
+  width: min(100%, 520px);
   margin-top: 38px;
+}
+
+.standaloneAction {
+  margin-top: 38px;
+}
+
+.standaloneAction .button {
+  min-height: 56px;
+  border-radius: 14px;
+  padding-inline: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(15, 18, 21, 0.08);
 }
 
 .authActions .button,
@@ -208,7 +223,7 @@
 
 .providerButton:disabled {
   cursor: not-allowed;
-  opacity: 0.68;
+  opacity: 1;
 }
 
 .googleButton {

@@ -93,14 +93,16 @@ export default async function Home() {
         <section className={styles.hero} aria-labelledby="hero-title">
           <div className={styles.heroGrid}>
             <div className={styles.heroCopy} data-reveal-hero>
-              <p className={styles.eyebrow}>A personal email news briefing</p>
+              <p className={styles.eyebrow}>Bulletin · Personal email news briefing</p>
               <h1 id="hero-title">{PRODUCT.landing.title}</h1>
               <p className={`${styles.heroLede} ${styles.desktopCopy}`}>
-                {PRODUCT.landing.description} Receive a finite read at the exact
-                time you choose—never an endless feed.
+                Bulletin is a personalised email news briefing shaped around your
+                interests, location, language, and schedule. It delivers a finite
+                read to your inbox at the time you choose.
               </p>
               <p className={`${styles.heroLede} ${styles.mobileCopy}`}>
-                Your news, filtered hard. A clear email at the time you choose.
+                Bulletin is a personalised email news briefing, delivered at the
+                time you choose.
               </p>
               <div className={styles.heroActions}>
                 <Link className={styles.primaryButton} href={PUBLIC_ROUTES.onboarding}>
@@ -357,7 +359,10 @@ export default async function Home() {
           </div>
           <div className={styles.footerBottom}>
             <p>© 2026 {PRODUCT.name}.</p>
-            <p>Designed for a calmer way to stay informed.</p>
+            <div className={styles.footerLegal}>
+              <Link href="/privacy">Privacy</Link>
+              <Link href="/terms">Terms</Link>
+            </div>
           </div>
         </div>
       </footer>

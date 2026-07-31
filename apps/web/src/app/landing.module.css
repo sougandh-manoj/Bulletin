@@ -925,6 +925,22 @@
   font-size: 0.72rem;
 }
 
+.footerLegal {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.footerLegal a {
+  color: var(--landing-faint);
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.footerLegal a:hover {
+  color: var(--landing-ink);
+}
+
 @keyframes rise-in {
   from {
     opacity: 0;

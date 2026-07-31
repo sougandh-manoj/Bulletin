@@ -1087,6 +1087,16 @@
     color: var(--landing-ink);
     font-size: 0.9rem;
     font-weight: 750;
+    -webkit-tap-highlight-color: transparent;
+    transition: border-color 100ms ease, background-color 100ms ease,
+      box-shadow 100ms ease, transform 100ms ease;
+  }
+
+  .heroActions .mobileManageButton:active {
+    border-color: var(--landing-ink);
+    background: color-mix(in srgb, var(--landing-surface) 70%, #15191d 4%);
+    box-shadow: inset 0 0 0 1px var(--landing-ink);
+    transform: translateY(1px);
   }
 
   .heroActions .textLink {

@@ -2,6 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 
 import { describe, expect, it, vi } from "vitest";
 
+import { hasDeliveredBriefing, loadLatestDeliveredBriefing } from "@/data/delivery";
 import { getTrustedSupabase } from "@/lib/supabase/server";
 import { runDeliveryBatch } from "@/services/delivery";
 
@@ -23,11 +24,21 @@ describe.skipIf(!localOnly)("Phase 9 local non-sending delivery integration", ()
     const clusterId = randomUUID();
     const clusterReference = randomUUID();
     const summaryId = randomUUID();
+    const { data: controls, error: controlsError } = await database
+      .from("system_controls")
+      .select("email_delivery_enabled,delivery_worker_paused")
+      .eq("singleton", true)
+      .single();
+    if (controlsError) throw controlsError;
     try {
+      await database.from("system_controls").update({
+        email_delivery_enabled: true,
+        delivery_worker_paused: false,
+      }).eq("singleton", true).throwOnError();
       const { data: source, error: sourceError } = await database.from("sources").select("id").limit(1).single();
       if (sourceError) throw sourceError;
       await database.from("subscribers").insert({ id: subscriberId, email: `phase9-${subscriberId}@example.invalid`, name: "Phase 9 Fixture", status: "active", verified_at: "2026-07-19T00:00:00Z", consent_at: "2026-07-01T00:00:00Z", consent_version: "2026-07-12" }).throwOnError();
-      await database.from("subscriber_preferences").insert({ subscriber_id: subscriberId, country_code: "IN", state_region: "Kerala", language: "en", categories: ["science"], story_count: 1, theme: "light-editorial" }).throwOnError();
+      await database.from("subscriber_preferences").insert({ subscriber_id: subscriberId, country_code: "IN", state_region: "Kerala", language: "en", categories: ["science"], story_count: 2, theme: "light-editorial" }).throwOnError();
       await database.from("subscriber_schedules").insert({ subscriber_id: subscriberId, frequency: "daily", local_delivery_time: "08:00:00", timezone: "Asia/Kolkata", next_delivery_at: "2026-07-20T02:30:00Z" }).throwOnError();
       await database.from("articles").insert({ id: articleId, source_id: source.id, original_title: "Exact Phase 9 story", normalized_title: "exact phase 9 story", description: "Supported public facts.", canonical_url: `https://fixture.invalid/${articleId}`, canonical_url_hash: hash(`u-${articleId}`), normalized_title_hash: hash(`t-${articleId}`), published_at: "2026-07-19T01:30:00Z", processing_status: "processed", processed_at: "2026-07-19T02:00:00Z", next_processing_at: "2026-07-19T02:00:00Z" }).throwOnError();
       await database.from("story_clusters").insert({ id: clusterId, public_reference: clusterReference, status: "verified", category: "science", central_topics: ["fixture"], entities: {}, evidence_strength: "strong", current_version: 1, latest_event_at: "2026-07-19T01:30:00Z", verified_at: "2026-07-19T02:00:00Z", evidence_independence_count: 2, evidence_result: {}, conflict_details: [], verification_version: "p7" }).throwOnError();
@@ -48,6 +59,26 @@ describe.skipIf(!localOnly)("Phase 9 local non-sending delivery integration", ()
       expect(send).toHaveBeenCalledOnce();
       const { data: delivery } = await database.from("deliveries").select("status,smtp_message_id,sent_at").eq("id", deliveryId).single();
       expect(delivery).toMatchObject({ status: "sent", smtp_message_id: "phase9-non-sending-receipt" });
+      expect(await hasDeliveredBriefing({ subscriberId, database })).toBe(true);
+      const webBriefing = await loadLatestDeliveredBriefing({
+        owner: {
+          subscriberId,
+          subscriberName: "Phase 9 Fixture",
+          timezone: "Asia/Kolkata",
+        },
+        database,
+      });
+      expect(webBriefing).toMatchObject({
+        deliveryId,
+        subscriberId,
+        actualStoryCount: 1,
+        stories: [{
+          position: 1,
+          headline: "Exact stored Phase 9 headline",
+          whyItMatters: "This is the exact stored reason.",
+          sources: [{ url: `https://fixture.invalid/${articleId}` }],
+        }],
+      });
       const retry = await runDeliveryBatch({ workerId: randomUUID(), batchSize: 10, leaseSeconds: 300, now, dependencies: { send, heartbeat: async () => undefined, alert: async () => false, resolveAlert: async () => false } });
       expect(retry.claimed).toBe(0);
       expect(send).toHaveBeenCalledOnce();
@@ -55,6 +86,7 @@ describe.skipIf(!localOnly)("Phase 9 local non-sending delivery integration", ()
       await database.from("subscribers").delete().eq("id", subscriberId);
       await database.from("story_clusters").delete().eq("id", clusterId);
       await database.from("articles").delete().eq("id", articleId);
+      await database.from("system_controls").update(controls).eq("singleton", true);
     }
   }, 30_000);
 });

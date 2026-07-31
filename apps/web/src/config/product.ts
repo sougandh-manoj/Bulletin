@@ -43,6 +43,7 @@ export const PUBLIC_ROUTES = {
   home: "/",
   onboarding: "/onboarding",
   manageAccess: "/manage",
+  todaysBriefing: "/briefing/today",
 } as const;
 
 export const INDIAN_REGIONS = [

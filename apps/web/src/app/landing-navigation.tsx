@@ -71,7 +71,13 @@ async function scrollToSection(
   });
 }
 
-export function LandingNavigation({ signedIn = false }: { signedIn?: boolean }) {
+export function LandingNavigation({
+  signedIn = false,
+  hasBriefing = false,
+}: {
+  signedIn?: boolean;
+  hasBriefing?: boolean;
+}) {
   return (
     <header className={styles.siteHeader}>
       <div className={styles.headerInner}>
@@ -99,6 +105,11 @@ export function LandingNavigation({ signedIn = false }: { signedIn?: boolean }) 
         </nav>
 
         <div className={styles.headerActions}>
+          {hasBriefing ? (
+            <Link className={styles.todayLink} href={PUBLIC_ROUTES.todaysBriefing}>
+              Today&apos;s briefing
+            </Link>
+          ) : null}
           <Link className={styles.manageLink} href={PUBLIC_ROUTES.manageAccess}>
             Manage briefing
           </Link>

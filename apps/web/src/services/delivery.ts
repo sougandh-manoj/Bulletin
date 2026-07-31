@@ -100,10 +100,11 @@ function assertSafeContext(context: DeliveryRenderContext) {
   });
 }
 
-function render(context: DeliveryRenderContext) {
+export function buildDeliveryEmailFromContext(
+  context: DeliveryRenderContext,
+  manageUrl: string,
+) {
   assertSafeContext(context);
-  const environment = getSecureAccessEnvironment();
-  const manageUrl = new URL("/manage", environment.APP_BASE_URL).toString();
   const stories: StoredBriefingStory[] = context.stories.map((story) => ({
     position: story.position,
     category: story.category,
@@ -166,7 +167,11 @@ async function processClaim(input: {
   let smtpAccepted = false;
   try {
     context = await input.dependencies.load({ claim: input.claim });
-    const email = render(context);
+    const environment = getSecureAccessEnvironment();
+    const email = buildDeliveryEmailFromContext(
+      context,
+      new URL("/manage", environment.APP_BASE_URL).toString(),
+    );
     const marked = await input.dependencies.markRendered({
       claim: input.claim,
       storyCount: context.actualStoryCount,

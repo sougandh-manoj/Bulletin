@@ -7,7 +7,8 @@ import {
   PRODUCT,
   PUBLIC_ROUTES,
 } from "@/config/product";
-import { getSupabaseAuthUser } from "@/lib/supabase/auth";
+import { hasDeliveredBriefing } from "@/data/delivery";
+import { getAuthenticatedBulletinSubscriber } from "@/lib/security/authenticated-subscriber";
 
 import { LandingNavigation } from "./landing-navigation";
 import { LandingScrollReveal } from "./landing-scroll-reveal";
@@ -81,13 +82,18 @@ function SourceMark() {
 }
 
 export default async function Home() {
-  const signedIn = Boolean(await getSupabaseAuthUser());
+  const authenticated = await getAuthenticatedBulletinSubscriber();
+  const subscriber = authenticated?.subscriber;
+  const hasBriefing = subscriber
+    ? await hasDeliveredBriefing({ subscriberId: subscriber.subscriberId })
+    : null;
+  const signedIn = Boolean(authenticated);
 
   return (
     <div className={styles.page} data-scroll-reveal-root>
       <LandingScrollReveal />
       
-      <LandingNavigation signedIn={signedIn} />
+      <LandingNavigation signedIn={signedIn} hasBriefing={Boolean(hasBriefing)} />
 
       <main id="main-content">
         <section className={styles.hero} aria-labelledby="hero-title">
@@ -107,13 +113,25 @@ export default async function Home() {
                 time you choose.
               </p>
               <div className={styles.heroActions}>
-                <Link className={styles.primaryButton} href={PUBLIC_ROUTES.onboarding}>
-                  Create my briefing
-                  <ArrowIcon />
-                </Link>
-                <Link className={styles.mobileManageButton} href={PUBLIC_ROUTES.manageAccess}>
-                  Manage briefing
-                </Link>
+                {hasBriefing ? (
+                  <Link
+                    className={`${styles.primaryButton} ${styles.mobileTodayButton}`}
+                    href={PUBLIC_ROUTES.todaysBriefing}
+                  >
+                    Today&apos;s briefing
+                    <ArrowIcon />
+                  </Link>
+                ) : (
+                  <Link className={styles.primaryButton} href={PUBLIC_ROUTES.onboarding}>
+                    Create my briefing
+                    <ArrowIcon />
+                  </Link>
+                )}
+                {subscriber ? (
+                  <Link className={styles.mobileManageButton} href={PUBLIC_ROUTES.manageAccess}>
+                    Manage briefing
+                  </Link>
+                ) : null}
                 <a className={styles.textLink} href="#your-briefing">
                   See what arrives
                 </a>

@@ -110,7 +110,8 @@
 }
 
 .desktopNavigation a,
-.manageLink {
+.manageLink,
+.todayLink {
   min-height: 44px;
   display: inline-flex;
   align-items: center;
@@ -121,7 +122,8 @@
 }
 
 .desktopNavigation a:hover,
-.manageLink:hover {
+.manageLink:hover,
+.todayLink:hover {
   color: var(--landing-ink);
 }
 
@@ -132,12 +134,14 @@
   gap: 20px;
 }
 
-.manageLink {
+.manageLink,
+.todayLink {
   position: relative;
   color: var(--landing-faint);
 }
 
-.manageLink::after {
+.manageLink::after,
+.todayLink::after {
   position: absolute;
   right: 0;
   bottom: 7px;
@@ -150,7 +154,8 @@
   transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.manageLink:is(:hover, :focus-visible)::after {
+.manageLink:is(:hover, :focus-visible)::after,
+.todayLink:is(:hover, :focus-visible)::after {
   transform: scaleX(1);
   transform-origin: left center;
 }
@@ -285,6 +290,10 @@
 
 .mobileManageButton {
   display: none;
+}
+
+.mobileTodayButton {
+  display: none !important;
 }
 
 .mobileCopy {
@@ -1002,7 +1011,8 @@
   }
 
   .desktopNavigation,
-  .manageLink {
+  .manageLink,
+  .todayLink {
     display: none;
   }
 
@@ -1114,6 +1124,10 @@
   .heroActions .textLink {
     width: 100%;
     justify-content: center;
+  }
+
+  .heroActions .mobileTodayButton {
+    display: inline-flex !important;
   }
 
   .heroActions .mobileManageButton {

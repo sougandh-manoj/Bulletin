@@ -1732,6 +1732,12 @@
   gap: 24px;
 }
 
+.dangerZone .finishButton,
+.dangerZone .dangerButton {
+  min-height: 56px;
+  border-radius: 14px;
+}
+
 .finishButton {
   min-height: 48px;
   border: 1px solid #315f91;

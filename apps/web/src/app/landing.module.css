@@ -94,8 +94,12 @@
   font-family: var(--landing-serif);
   font-size: 1.55rem;
   font-weight: 700;
-  letter-spacing: -0.025em;
+  letter-spacing: 0;
   line-height: 1;
+}
+
+.wordmark {
+  font-size: 1.8rem;
 }
 
 .desktopNavigation {
@@ -1039,7 +1043,7 @@
   }
 
   .wordmark {
-    font-size: 1.3rem;
+    font-size: 1.55rem;
   }
 
   .headerActions {

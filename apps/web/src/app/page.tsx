@@ -93,7 +93,7 @@ export default async function Home() {
         <section className={styles.hero} aria-labelledby="hero-title">
           <div className={styles.heroGrid}>
             <div className={styles.heroCopy} data-reveal-hero>
-              <p className={styles.eyebrow}>Bulletin · Personal news briefing</p>
+              <p className={styles.eyebrow}>Personal news briefing</p>
               <h2 className={styles.heroTitle} id="hero-title">
                 {PRODUCT.landing.title}
               </h2>

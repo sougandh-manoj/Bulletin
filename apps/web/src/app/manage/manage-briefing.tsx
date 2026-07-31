@@ -848,7 +848,7 @@ export default function ManageBriefing({
           <Link className={styles.finishButton} href="/">
             Finish for now
           </Link>
-          <Link className={`${styles.dangerButton} ${styles.unsubscribeButton}`} href="/manage/delete">
+          <Link className={styles.unsubscribeText} href="/manage/delete">
             Unsubscribe
           </Link>
         </section>

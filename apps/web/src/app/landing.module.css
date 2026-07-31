@@ -205,7 +205,7 @@
 }
 
 .hero {
-  padding: 88px 0 116px;
+  padding: 52px 0 116px;
 }
 
 .heroGrid {
@@ -966,7 +966,7 @@
 
 @media (max-width: 1100px) {
   .hero {
-    padding: 70px 0 96px;
+    padding: 52px 0 96px;
   }
 
   .heroGrid {

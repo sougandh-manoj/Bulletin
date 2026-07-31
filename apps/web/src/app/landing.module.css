@@ -169,15 +169,15 @@
 }
 
 .signOutButton {
-  min-height: 42px;
+  min-height: 34px;
   border: 1px solid var(--landing-ink);
-  border-radius: 12px;
+  border-radius: 10px;
   background: transparent;
   color: var(--landing-ink);
-  padding: 9px 16px;
+  padding: 6px 12px;
   cursor: pointer;
   font: inherit;
-  font-size: 0.82rem;
+  font-size: 0.74rem;
   font-weight: 700;
 }
 

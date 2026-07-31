@@ -1699,6 +1699,12 @@
   line-height: 1.6;
 }
 
+.sticky > .button,
+.sticky > .secondaryButton {
+  min-height: 56px;
+  border-radius: 14px;
+}
+
 .dangerZone {
   margin-top: 34px;
   padding: 26px 0 6px;
@@ -1865,7 +1871,23 @@
   }
 
   .manageAddButton {
+    width: 112px;
     min-height: 44px;
+    justify-self: end;
+    border-color: var(--blue);
+    border-radius: 12px;
+    background: var(--blue);
+    color: #fff;
+  }
+
+  .manageAddButton:hover:not(:disabled) {
+    border-color: var(--blue-dark);
+    background: var(--blue-dark);
+  }
+
+  .manageAddButton:disabled {
+    color: rgba(255, 255, 255, 0.68);
+    opacity: 1;
   }
 
   .manageStoryControl {

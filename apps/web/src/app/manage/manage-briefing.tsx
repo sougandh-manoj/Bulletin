@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import {
-  FormEvent,
   KeyboardEvent,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -33,6 +33,7 @@ import {
   type Weekday,
 } from "@/config/product";
 import { formatDeliveryDateTime } from "@/lib/presentation/date-time";
+import { managedPreferencesSchema } from "@/lib/validation/subscriber";
 
 import {
   CATEGORY_TONE,
@@ -68,6 +69,31 @@ type TimePart = "hour" | "minute" | "period";
 const TIME_HOURS = Array.from({ length: 12 }, (_, index) => index + 1);
 const TIME_MINUTES = Array.from({ length: 60 }, (_, index) => index);
 const TIME_PERIODS: TimePeriod[] = ["AM", "PM"];
+const AUTOSAVE_DELAY_MS = 450;
+
+function preferencesFromDraft(draft: ManageState) {
+  return {
+    name: draft.name,
+    countryCode: draft.countryCode,
+    stateRegion: draft.stateRegion,
+    city: draft.city,
+    language: draft.language,
+    categories: draft.categories,
+    customTopics: draft.customTopics,
+    excludedTopics: draft.excludedTopics,
+    storyCount: draft.storyCount,
+    theme: draft.theme,
+    frequency: draft.frequency,
+    weeklyDay: draft.frequency === "weekly" ? draft.weeklyDay : undefined,
+    deliveryTime: draft.deliveryTime,
+    timezone: draft.timezone,
+  };
+}
+
+function validPreferencesKey(draft: ManageState) {
+  const parsed = managedPreferencesSchema.safeParse(preferencesFromDraft(draft));
+  return parsed.success ? JSON.stringify(parsed.data) : null;
+}
 
 function formatTime(value: string) {
   const [hour = "8", minute = "00"] = value.split(":");
@@ -387,14 +413,26 @@ export default function ManageBriefing({
   const initialCountry = countries.find((country) => country.code === initial.countryCode);
   const [draft, setDraft] = useState(initial);
   const [countryQuery, setCountryQuery] = useState(initialCountry?.label ?? initial.countryCode);
-  const [version, setVersion] = useState(initial.preferenceVersion);
   const [status, setStatus] = useState(initial.status);
   const [nextDeliveryAt, setNextDeliveryAt] = useState(initial.nextDeliveryAt);
   const [saving, setSaving] = useState(false);
   const [controlPending, setControlPending] = useState(false);
-  const [themePending, setThemePending] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
+  const [saveRevision, setSaveRevision] = useState(0);
+  const latestDraftRef = useRef(draft);
+  const versionRef = useRef(initial.preferenceVersion);
+  const savingRef = useRef(false);
+  const retryRequestedRef = useRef(false);
+  const initialPreferencesKey = useMemo(() => JSON.stringify(
+    managedPreferencesSchema.parse(preferencesFromDraft(initial)),
+  ), [initial]);
+  const savedPreferencesKeyRef = useRef(initialPreferencesKey);
+  const draftPreferencesKey = JSON.stringify(preferencesFromDraft(draft));
+
+  useEffect(() => {
+    latestDraftRef.current = draft;
+  }, [draft]);
 
   const formattedNext = useMemo(() => {
     if (status === "paused") return "Paused — no delivery is scheduled";
@@ -430,35 +468,33 @@ export default function ManageBriefing({
     );
   };
 
-  const save = async (event: FormEvent) => {
-    event.preventDefault();
-    if (saving) return;
+  const persistLatestPreferences = useCallback(async (keepalive = false) => {
+    const parsed = managedPreferencesSchema.safeParse(
+      preferencesFromDraft(latestDraftRef.current),
+    );
+    if (!parsed.success) return;
+
+    const preferencesKey = JSON.stringify(parsed.data);
+    if (preferencesKey === savedPreferencesKeyRef.current) return;
+    if (savingRef.current) {
+      retryRequestedRef.current = true;
+      return;
+    }
+
+    savingRef.current = true;
     setSaving(true);
     setNotice("");
     setError("");
+    let saved = false;
     try {
       const response = await fetch("/api/secure/preferences", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        keepalive,
         body: JSON.stringify({
           csrfToken,
-          expectedVersion: version,
-          preferences: {
-            name: draft.name,
-            countryCode: draft.countryCode,
-            stateRegion: draft.stateRegion,
-            city: draft.city,
-            language: draft.language,
-            categories: draft.categories,
-            customTopics: draft.customTopics,
-            excludedTopics: draft.excludedTopics,
-            storyCount: draft.storyCount,
-            theme: draft.theme,
-            frequency: draft.frequency,
-            weeklyDay: draft.frequency === "weekly" ? draft.weeklyDay : undefined,
-            deliveryTime: draft.deliveryTime,
-            timezone: draft.timezone,
-          },
+          expectedVersion: versionRef.current,
+          preferences: parsed.data,
         }),
       });
       const result = await response.json() as {
@@ -471,41 +507,55 @@ export default function ManageBriefing({
         setError(`${result.message ?? "Changes could not be saved."} No previously saved preference was changed.`);
         return;
       }
-      setVersion(result.version);
+      versionRef.current = result.version;
+      savedPreferencesKeyRef.current = preferencesKey;
       setNextDeliveryAt(result.nextDeliveryAt ?? null);
-      setNotice("Changes saved.");
+      if (validPreferencesKey(latestDraftRef.current) === preferencesKey) {
+        setNotice("Changes saved.");
+      }
+      saved = true;
     } catch {
       setError("We couldn’t save your changes. Your previous settings are still in place.");
     } finally {
+      const retryRequested = retryRequestedRef.current;
+      retryRequestedRef.current = false;
+      savingRef.current = false;
       setSaving(false);
-    }
-  };
-
-  const chooseTheme = async (theme: BriefingTheme) => {
-    if (themePending || theme === draft.theme) return;
-    const previous = draft.theme;
-    update("theme", theme);
-    setThemePending(true);
-    try {
-      const response = await fetch("/api/secure/theme", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ csrfToken, theme, expectedVersion: version }),
-      });
-      const result = await response.json() as { ok?: boolean; version?: number; message?: string };
-      if (!response.ok || !result.ok || !result.version) {
-        update("theme", previous);
-        setError(result.message ?? "Theme was not changed.");
-        return;
+      if (retryRequested || (
+        saved && validPreferencesKey(latestDraftRef.current) !== savedPreferencesKeyRef.current
+      )) {
+        setSaveRevision((revision) => revision + 1);
       }
-      setVersion(result.version);
-    } catch {
-      update("theme", previous);
-      setError("Theme was not changed. The previous theme remains active.");
-    } finally {
-      setThemePending(false);
     }
-  };
+  }, [csrfToken]);
+
+  useEffect(() => {
+    const parsed = managedPreferencesSchema.safeParse(preferencesFromDraft(draft));
+    if (!parsed.success) return;
+    if (JSON.stringify(parsed.data) === savedPreferencesKeyRef.current) return;
+
+    const timer = window.setTimeout(() => {
+      void persistLatestPreferences();
+    }, AUTOSAVE_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [draft, draftPreferencesKey, persistLatestPreferences, saveRevision]);
+
+  useEffect(() => {
+    const flushPendingSave = () => {
+      void persistLatestPreferences(true);
+    };
+    const flushWhenHidden = () => {
+      if (document.visibilityState === "hidden") {
+        flushPendingSave();
+      }
+    };
+    document.addEventListener("visibilitychange", flushWhenHidden);
+    window.addEventListener("pagehide", flushPendingSave);
+    return () => {
+      document.removeEventListener("visibilitychange", flushWhenHidden);
+      window.removeEventListener("pagehide", flushPendingSave);
+    };
+  }, [persistLatestPreferences]);
 
   const changeDeliveryState = async () => {
     if (controlPending) return;
@@ -544,7 +594,7 @@ export default function ManageBriefing({
   };
 
   return (
-    <form className={styles.manageLayout} onSubmit={save} noValidate>
+    <form className={styles.manageLayout} onSubmit={(event) => event.preventDefault()} noValidate>
       <div className={styles.sections}>
         <section className={styles.section} aria-labelledby="profile-heading">
           <div className={styles.manageSectionHeading}>
@@ -785,8 +835,7 @@ export default function ManageBriefing({
                   aria-label={`Select ${BRIEFING_THEME_LABELS[theme]} theme`}
                   data-selected={draft.theme === theme}
                   aria-pressed={draft.theme === theme}
-                  disabled={themePending}
-                  onClick={() => chooseTheme(theme)}
+                  onClick={() => update("theme", theme)}
                 >
                   <ThemePreview theme={theme} />
                 </button>
@@ -805,20 +854,20 @@ export default function ManageBriefing({
         </section>
       </div>
 
-      <aside className={styles.sticky} aria-label="Save and delivery status">
+      <aside className={styles.sticky} aria-label="Delivery and update status">
         <p className={styles.eyebrow}>Delivery {status}</p>
         <h2>{formattedNext}</h2>
         <p>{status === "active" ? "Your briefing is ready for its next delivery." : "Your briefing will stay quiet until you resume."}</p>
         <button type="button" className={styles.secondaryButton} disabled={controlPending} onClick={changeDeliveryState}>
           {controlPending ? "Updating…" : status === "active" ? "Pause briefing" : "Resume briefing"}
         </button>
-        <button className={styles.button} type="submit" disabled={saving}>
-          {saving ? "Saving changes…" : "Save changes"}
-        </button>
-        <div aria-live="polite">
-          {notice && <p className={styles.success}>{notice}</p>}
-          {error && <p className={styles.error} role="alert">{error}</p>}
-        </div>
+        {(saving || notice || error) && (
+          <div aria-live="polite">
+            {saving && <p className={styles.autosaveStatus}>Saving changes…</p>}
+            {notice && <p className={styles.success}>{notice}</p>}
+            {error && <p className={styles.error} role="alert">{error}</p>}
+          </div>
+        )}
       </aside>
     </form>
   );

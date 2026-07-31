@@ -178,7 +178,7 @@
 
 .signInActions {
   width: min(100%, 520px);
-  margin-top: 38px;
+  margin: 38px auto 0;
 }
 
 .standaloneAction {

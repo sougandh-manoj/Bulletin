@@ -33,6 +33,12 @@ export default async function OnboardingPage() {
             <Link className={secureStyles.button} href="/manage">
               Manage briefing
             </Link>
+            <Link
+              className={`${secureStyles.button} ${secureStyles.todayButton}`}
+              href="/briefing/today"
+            >
+              Today&apos;s briefing
+            </Link>
           </div>
         </div>
       </SecureShell>

@@ -204,6 +204,9 @@
 }
 
 .standaloneAction {
+  width: min(100%, 520px);
+  display: grid;
+  gap: 12px;
   margin-top: 38px;
 }
 
@@ -216,6 +219,16 @@
   justify-content: center;
   text-decoration: none;
   box-shadow: 0 2px 8px rgba(15, 18, 21, 0.08);
+}
+
+.standaloneAction .todayButton {
+  border-color: #315f91;
+  background: #315f91;
+}
+
+.standaloneAction .todayButton:hover {
+  border-color: #244c76;
+  background: #244c76;
 }
 
 .authActions .button,
@@ -2008,6 +2021,10 @@
     background: #2a2f34;
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
     transform: scale(0.985);
+  }
+
+  .standaloneAction .todayButton:active {
+    background: #244c76;
   }
 }
 
